@@ -3,10 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta
-      name="description"
-      content="HTMLと組み込みCSS・JavaScriptをブラウザ内だけで整形する単一ファイルのフォーマッター"
-    >
+    <meta name="description" content="HTMLと組み込みCSS・JavaScriptをブラウザ内だけで整形する単一ファイルのフォーマッター">
     <title>HTML Formatter</title>
     <style>
       :root {
@@ -28,40 +25,32 @@
         --shadow: 0 14px 36px rgba(38, 55, 77, 0.09);
         --radius: 12px;
         --control-radius: 7px;
-        font-family:
-          Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          "Noto Sans JP", sans-serif;
+        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
         font-synthesis: none;
       }
-
       * {
         box-sizing: border-box;
       }
-
       html,
       body {
         min-width: 320px;
         min-height: 100%;
         margin: 0;
       }
-
       body {
         min-height: 100vh;
         background: var(--page);
         color: var(--text);
       }
-
       button,
       select,
       textarea {
         font: inherit;
       }
-
       button,
       select {
         min-height: 38px;
       }
-
       button {
         display: inline-flex;
         align-items: center;
@@ -74,27 +63,19 @@
         color: var(--text);
         font-weight: 650;
         cursor: pointer;
-        transition:
-          border-color 120ms ease,
-          background-color 120ms ease,
-          color 120ms ease,
-          transform 120ms ease;
+        transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease, transform 120ms ease;
       }
-
       button:hover:not(:disabled) {
         border-color: #8da0b7;
         background: #f7f9fc;
       }
-
       button:active:not(:disabled) {
         transform: translateY(1px);
       }
-
       button:disabled {
         cursor: not-allowed;
         opacity: 0.48;
       }
-
       button:focus-visible,
       select:focus-visible,
       textarea:focus-visible {
@@ -102,31 +83,26 @@
         outline-offset: 1px;
         border-color: var(--focus);
       }
-
       button.primary {
         min-width: 108px;
         border-color: var(--primary);
         background: var(--primary);
         color: #ffffff;
       }
-
       button.primary:hover:not(:disabled) {
         border-color: var(--primary-hover);
         background: var(--primary-hover);
       }
-
       button.quiet {
         border-color: transparent;
         background: transparent;
         color: var(--text-muted);
       }
-
       button.quiet:hover:not(:disabled) {
         border-color: var(--border);
         background: var(--surface-muted);
         color: var(--text);
       }
-
       select {
         padding: 0 34px 0 11px;
         border: 1px solid var(--border-strong);
@@ -135,13 +111,11 @@
         color: var(--text);
         cursor: pointer;
       }
-
       .app-shell {
         display: grid;
         grid-template-rows: auto 1fr auto;
         min-height: 100vh;
       }
-
       .app-header {
         display: flex;
         align-items: center;
@@ -151,20 +125,17 @@
         border-bottom: 1px solid var(--border);
         background: var(--surface);
       }
-
       .brand h1 {
         margin: 0;
         font-size: clamp(1.25rem, 2vw, 1.6rem);
         line-height: 1.2;
         letter-spacing: -0.02em;
       }
-
       .brand p {
         margin: 5px 0 0;
         color: var(--text-muted);
         font-size: 0.88rem;
       }
-
       .local-badge {
         display: inline-flex;
         align-items: center;
@@ -178,7 +149,6 @@
         font-size: 0.78rem;
         font-weight: 700;
       }
-
       .local-badge::before {
         width: 7px;
         height: 7px;
@@ -186,7 +156,6 @@
         background: var(--success);
         content: "";
       }
-
       .app-main {
         display: grid;
         grid-template-rows: auto minmax(0, 1fr);
@@ -194,7 +163,6 @@
         min-height: 0;
         padding: 18px clamp(14px, 2.5vw, 34px);
       }
-
       .toolbar {
         display: flex;
         align-items: center;
@@ -206,13 +174,11 @@
         background: var(--surface);
         box-shadow: 0 4px 16px rgba(38, 55, 77, 0.04);
       }
-
       .toolbar-group {
         display: flex;
         align-items: center;
         gap: 8px;
       }
-
       .setting-label {
         display: inline-flex;
         align-items: center;
@@ -221,14 +187,12 @@
         font-size: 0.84rem;
         font-weight: 650;
       }
-
       .workspace {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         gap: 14px;
         min-height: 0;
       }
-
       .editor-panel {
         position: relative;
         display: grid;
@@ -240,18 +204,12 @@
         border-radius: var(--radius);
         background: var(--surface);
         box-shadow: var(--shadow);
-        transition:
-          border-color 120ms ease,
-          box-shadow 120ms ease;
+        transition: border-color 120ms ease, box-shadow 120ms ease;
       }
-
       .editor-panel.is-drop-target {
         border-color: var(--primary);
-        box-shadow:
-          0 0 0 4px rgba(18, 103, 196, 0.14),
-          var(--shadow);
+        box-shadow: 0 0 0 4px rgba(18, 103, 196, 0.14), var(--shadow);
       }
-
       .editor-panel.is-drop-target::after {
         position: absolute;
         inset: 58px 14px 14px;
@@ -266,7 +224,6 @@
         content: "HTMLファイルをドロップ";
         pointer-events: none;
       }
-
       .panel-header {
         display: flex;
         align-items: center;
@@ -277,20 +234,17 @@
         border-bottom: 1px solid var(--border);
         background: var(--surface-muted);
       }
-
       .panel-heading {
         display: flex;
         align-items: baseline;
         min-width: 0;
         gap: 10px;
       }
-
       .panel-heading h2 {
         margin: 0;
         font-size: 0.94rem;
         letter-spacing: 0.01em;
       }
-
       .panel-stats {
         overflow: hidden;
         color: var(--text-muted);
@@ -298,19 +252,16 @@
         text-overflow: ellipsis;
         white-space: nowrap;
       }
-
       .panel-actions {
         display: flex;
         align-items: center;
         gap: 5px;
       }
-
       .panel-actions button {
         min-height: 32px;
         padding: 0 10px;
         font-size: 0.78rem;
       }
-
       .code-editor {
         width: 100%;
         min-height: 0;
@@ -321,27 +272,22 @@
         background: #fbfcfe;
         color: #192234;
         padding: 18px;
-        font-family:
-          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
         font-size: 13px;
         line-height: 1.62;
         tab-size: 2;
         white-space: pre;
       }
-
       .code-editor::placeholder {
         color: #8491a2;
       }
-
       .code-editor:focus {
         background: #ffffff;
         box-shadow: inset 0 0 0 2px rgba(18, 103, 196, 0.12);
       }
-
       .code-editor[readonly] {
         background: #f7f9fc;
       }
-
       .app-footer {
         display: flex;
         align-items: center;
@@ -354,28 +300,22 @@
         color: var(--text-muted);
         font-size: 0.78rem;
       }
-
       .status-message {
         min-width: 0;
       }
-
       .status-message[data-kind="success"] {
         color: var(--success);
       }
-
       .status-message[data-kind="warning"] {
         color: var(--warning);
       }
-
       .status-message[data-kind="error"] {
         color: var(--error);
       }
-
       .shortcut-hint {
         flex: 0 0 auto;
         white-space: nowrap;
       }
-
       kbd {
         display: inline-flex;
         min-width: 23px;
@@ -392,7 +332,6 @@
         font-size: 0.72rem;
         font-weight: 700;
       }
-
       .visually-hidden {
         position: absolute;
         width: 1px;
@@ -404,66 +343,52 @@
         white-space: nowrap;
         border: 0;
       }
-
       @media (max-width: 820px) {
         .app-main {
           min-height: auto;
         }
-
         .workspace {
           grid-template-columns: 1fr;
         }
-
         .editor-panel {
           grid-template-rows: auto minmax(360px, 48vh);
         }
       }
-
       @media (max-width: 620px) {
         .app-header {
           align-items: flex-start;
           padding-block: 16px;
         }
-
         .brand p {
           max-width: 34ch;
         }
-
         .local-badge {
           padding-inline: 8px;
           font-size: 0;
         }
-
         .local-badge::after {
           font-size: 0.72rem;
           content: "ローカル";
         }
-
         .toolbar {
           align-items: stretch;
           flex-direction: column;
         }
-
         .toolbar-group {
           justify-content: space-between;
         }
-
         .toolbar-group:first-child button {
           flex: 1 1 auto;
         }
-
         .setting-label {
           flex: 1 1 auto;
         }
-
         .setting-label select {
           flex: 1 1 auto;
         }
-
         button.primary {
           flex: 0 0 106px;
         }
-
         .app-footer {
           align-items: flex-start;
           flex-direction: column;
@@ -481,18 +406,10 @@
         </div>
         <span class="local-badge">ブラウザ内だけで処理</span>
       </header>
-
       <main class="app-main">
         <section class="toolbar" aria-label="整形操作">
           <div class="toolbar-group">
-            <input
-              id="fileInput"
-              class="visually-hidden"
-              type="file"
-              accept=".html,.htm,text/html"
-            >
-            <button id="openButton" type="button">ファイルを開く</button>
-            <button id="sampleButton" type="button">サンプル</button>
+            <input id="fileInput" class="visually-hidden" type="file" accept=".html,.htm,text/html"><button id="openButton" type="button">ファイルを開く</button><button id="sampleButton" type="button">サンプル</button>
           </div>
           <div class="toolbar-group">
             <label class="setting-label" for="indentSelect">
@@ -506,7 +423,6 @@
             <button id="formatButton" class="primary" type="button">整形</button>
           </div>
         </section>
-
         <section class="workspace" aria-label="HTMLエディター">
           <article id="sourcePanel" class="editor-panel">
             <header class="panel-header">
@@ -514,21 +430,11 @@
                 <h2>入力</h2>
                 <span id="inputStats" class="panel-stats">0行 · 0文字</span>
               </div>
-              <div class="panel-actions">
-                <button id="clearButton" class="quiet" type="button">消去</button>
-              </div>
+              <div class="panel-actions"><button id="clearButton" class="quiet" type="button">消去</button></div>
             </header>
             <label class="visually-hidden" for="sourceInput">整形するHTML</label>
-            <textarea
-              id="sourceInput"
-              class="code-editor"
-              spellcheck="false"
-              autocapitalize="off"
-              autocomplete="off"
-              placeholder="ここにHTMLを貼り付けるか、HTMLファイルをドロップしてください。"
-            ></textarea>
+            <textarea id="sourceInput" class="code-editor" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="ここにHTMLを貼り付けるか、HTMLファイルをドロップしてください。"></textarea>
           </article>
-
           <article class="editor-panel">
             <header class="panel-header">
               <div class="panel-heading">
@@ -536,335 +442,50 @@
                 <span id="outputStats" class="panel-stats">0行 · 0文字</span>
               </div>
               <div class="panel-actions">
-                <button id="copyButton" type="button" disabled>コピー</button>
-                <button id="downloadButton" type="button" disabled>保存</button>
+                <button id="copyButton" type="button" disabled>コピー</button><button id="downloadButton" type="button" disabled>保存</button>
               </div>
             </header>
             <label class="visually-hidden" for="formattedOutput">整形済みHTML</label>
-            <textarea
-              id="formattedOutput"
-              class="code-editor"
-              spellcheck="false"
-              readonly
-              placeholder="整形結果がここに表示されます。"
-            ></textarea>
+            <textarea id="formattedOutput" class="code-editor" spellcheck="false" readonly placeholder="整形結果がここに表示されます。"></textarea>
           </article>
         </section>
       </main>
-
       <footer class="app-footer">
-        <span id="statusMessage" class="status-message" data-kind="neutral" aria-live="polite">
-          入力内容はブラウザ内だけで処理されます。
-        </span>
-        <span class="shortcut-hint"><kbd>Ctrl</kbd> / <kbd>⌘</kbd> + <kbd>Enter</kbd> で整形</span>
+        <span id="statusMessage" class="status-message" data-kind="neutral" aria-live="polite">入力内容はブラウザ内だけで処理されます。</span><span class="shortcut-hint"><kbd>Ctrl</kbd> / <kbd>⌘</kbd> + <kbd>Enter</kbd> で整形</span>
       </footer>
     </div>
-
     <script>
       (() => {
         "use strict";
-
-        const VOID_ELEMENTS = new Set([
-          "area",
-          "base",
-          "br",
-          "col",
-          "embed",
-          "hr",
-          "img",
-          "input",
-          "link",
-          "meta",
-          "param",
-          "source",
-          "track",
-          "wbr",
-        ]);
-
-        const RAW_TEXT_ELEMENTS = new Set([
-          "script",
-          "style",
-          "title",
-          "pre",
-          "textarea",
-          "xmp",
-          "iframe",
-          "noembed",
-          "noframes",
-        ]);
-
-        const PRESERVE_CONTENT_ELEMENTS = new Set([
-          "title",
-          "pre",
-          "textarea",
-          "xmp",
-          "iframe",
-          "noembed",
-          "noframes",
-        ]);
-
-        const INLINE_ELEMENTS = new Set([
-          "a",
-          "abbr",
-          "acronym",
-          "b",
-          "bdi",
-          "bdo",
-          "big",
-          "br",
-          "button",
-          "cite",
-          "code",
-          "data",
-          "del",
-          "dfn",
-          "em",
-          "i",
-          "img",
-          "input",
-          "ins",
-          "kbd",
-          "label",
-          "map",
-          "mark",
-          "meter",
-          "noscript",
-          "object",
-          "output",
-          "picture",
-          "progress",
-          "q",
-          "ruby",
-          "s",
-          "samp",
-          "select",
-          "slot",
-          "small",
-          "span",
-          "strong",
-          "sub",
-          "sup",
-          "text",
-          "textpath",
-          "time",
-          "tspan",
-          "tt",
-          "u",
-          "var",
-          "wbr",
-        ]);
-
-        const P_CLOSING_START_TAGS = new Set([
-          "address",
-          "article",
-          "aside",
-          "blockquote",
-          "div",
-          "dl",
-          "fieldset",
-          "footer",
-          "form",
-          "h1",
-          "h2",
-          "h3",
-          "h4",
-          "h5",
-          "h6",
-          "header",
-          "hgroup",
-          "hr",
-          "main",
-          "menu",
-          "nav",
-          "ol",
-          "p",
-          "pre",
-          "section",
-          "table",
-          "ul",
-        ]);
-
-        const CSS_SELECTOR_FUNCTIONS = new Set([
-          "any",
-          "has",
-          "host",
-          "host-context",
-          "is",
-          "matches",
-          "not",
-          "nth-child",
-          "nth-last-child",
-          "selector",
-          "slotted",
-          "where",
-        ]);
-
-        const RESTRICTED_LINE_BREAK_KEYWORDS = new Set([
-          "return",
-          "throw",
-          "break",
-          "continue",
-          "yield",
-        ]);
-
-        const CONTROL_PAREN_KEYWORDS = new Set([
-          "if",
-          "for",
-          "while",
-          "switch",
-          "catch",
-          "with",
-        ]);
-
-        const WORD_OPERATORS = new Set([
-          "in",
-          "instanceof",
-          "of",
-          "as",
-          "satisfies",
-        ]);
-
-        const PREFIX_KEYWORDS = new Set([
-          "delete",
-          "typeof",
-          "void",
-          "new",
-          "await",
-          "yield",
-        ]);
-
-        const JS_KEYWORDS_ALLOW_REGEX = new Set([
-          "return",
-          "throw",
-          "case",
-          "delete",
-          "void",
-          "typeof",
-          "instanceof",
-          "in",
-          "of",
-          "yield",
-          "await",
-          "else",
-          "do",
-          "new",
-        ]);
-
-        const JS_KEYWORDS = new Set([
-          "async",
-          "await",
-          "break",
-          "case",
-          "catch",
-          "class",
-          "const",
-          "continue",
-          "debugger",
-          "default",
-          "delete",
-          "do",
-          "else",
-          "export",
-          "extends",
-          "finally",
-          "for",
-          "from",
-          "function",
-          "get",
-          "if",
-          "import",
-          "in",
-          "instanceof",
-          "let",
-          "new",
-          "of",
-          "return",
-          "set",
-          "static",
-          "super",
-          "switch",
-          "this",
-          "throw",
-          "try",
-          "typeof",
-          "var",
-          "void",
-          "while",
-          "with",
-          "yield",
-        ]);
-
-        const JS_OPERATORS = [
-          ">>>=",
-          "===",
-          "!==",
-          "**=",
-          "&&=",
-          "||=",
-          "??=",
-          ">>>",
-          "<<=",
-          ">>=",
-          "...",
-          "=>",
-          "==",
-          "!=",
-          "<=",
-          ">=",
-          "++",
-          "--",
-          "&&",
-          "||",
-          "??",
-          "?.",
-          "**",
-          "+=",
-          "-=",
-          "*=",
-          "/=",
-          "%=",
-          "&=",
-          "|=",
-          "^=",
-          "<<",
-          ">>",
-          "=",
-          "+",
-          "-",
-          "*",
-          "/",
-          "%",
-          "<",
-          ">",
-          "!",
-          "~",
-          "&",
-          "|",
-          "^",
-          "?",
-        ];
-
+        const VOID_ELEMENTS = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr",]);
+        const RAW_TEXT_ELEMENTS = new Set(["script", "style", "title", "pre", "textarea", "xmp", "iframe", "noembed", "noframes",]);
+        const PRESERVE_CONTENT_ELEMENTS = new Set(["title", "pre", "textarea", "xmp", "iframe", "noembed", "noframes",]);
+        const INLINE_ELEMENTS = new Set(["a", "abbr", "acronym", "b", "bdi", "bdo", "big", "br", "button", "cite", "code", "data", "del", "dfn", "em", "i", "img", "input", "ins", "kbd", "label", "map", "mark", "meter", "noscript", "object", "output", "picture", "progress", "q", "ruby", "s", "samp", "select", "slot", "small", "span", "strong", "sub", "sup", "text", "textpath", "time", "tspan", "tt", "u", "var", "wbr",]);
+        const P_CLOSING_START_TAGS = new Set(["address", "article", "aside", "blockquote", "div", "dl", "fieldset", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup", "hr", "main", "menu", "nav", "ol", "p", "pre", "section", "table", "ul",]);
+        const CSS_SELECTOR_FUNCTIONS = new Set(["any", "has", "host", "host-context", "is", "matches", "not", "nth-child", "nth-last-child", "selector", "slotted", "where",]);
+        const RESTRICTED_LINE_BREAK_KEYWORDS = new Set(["return", "throw", "break", "continue", "yield",]);
+        const CONTROL_PAREN_KEYWORDS = new Set(["if", "for", "while", "switch", "catch", "with",]);
+        const WORD_OPERATORS = new Set(["in", "instanceof", "of", "as", "satisfies",]);
+        const PREFIX_KEYWORDS = new Set(["delete", "typeof", "void", "new", "await", "yield",]);
+        const JS_KEYWORDS_ALLOW_REGEX = new Set(["return", "throw", "case", "delete", "void", "typeof", "instanceof", "in", "of", "yield", "await", "else", "do", "new",]);
+        const JS_KEYWORDS = new Set(["async", "await", "break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete", "do", "else", "export", "extends", "finally", "for", "from", "function", "get", "if", "import", "in", "instanceof", "let", "new", "of", "return", "set", "static", "super", "switch", "this", "throw", "try", "typeof", "var", "void", "while", "with", "yield",]);
+        const JS_OPERATORS = [">>>=", "===", "!==", "**=", "&&=", "||=", "??=", ">>>", "<<=", ">>=", "...", "=>", "==", "!=", "<=", ">=", "++", "--", "&&", "||", "??", "?.", "**", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<", ">>", "=", "+", "-", "*", "/", "%", "<", ">", "!", "~", "&", "|", "^", "?",];
         function normalizeNewlines(value) {
           return String(value ?? "").replace(/\r\n?/g, "\n");
         }
-
         function escapeRegExp(value) {
           return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         }
-
         function repeatIndent(level, indentUnit) {
           return indentUnit.repeat(Math.max(0, level));
         }
-
         function normalizeTagWhitespace(rawTag) {
           const raw = rawTag.trim();
           let result = "";
           let quote = "";
           let pendingSpace = false;
-
           for (let index = 0; index < raw.length; index += 1) {
             const char = raw[index];
-
             if (quote) {
               result += char;
               if (char === quote) {
@@ -872,7 +493,6 @@
               }
               continue;
             }
-
             if (char === '"' || char === "'") {
               if (pendingSpace && shouldInsertTagSpace(result, char)) {
                 result += " ";
@@ -882,38 +502,29 @@
               result += char;
               continue;
             }
-
             if (/\s/.test(char)) {
               pendingSpace = true;
               continue;
             }
-
             if (char === "=") {
               result = result.trimEnd();
               pendingSpace = false;
               result += char;
               continue;
             }
-
             if (pendingSpace && shouldInsertTagSpace(result, char)) {
               result += " ";
             }
             pendingSpace = false;
             result += char;
           }
-
           return result.replace(/\s+>/g, ">");
         }
-
         function shouldInsertTagSpace(current, nextChar) {
           if (!current) {
             return false;
           }
-          if (
-            current.endsWith("<") ||
-            current.endsWith("</") ||
-            current.endsWith("=")
-          ) {
+          if (current.endsWith("<") || current.endsWith("</") || current.endsWith("=")) {
             return false;
           }
           if (nextChar === ">") {
@@ -924,10 +535,8 @@
           }
           return true;
         }
-
         function findTagEnd(source, startIndex) {
           let quote = "";
-
           for (let index = startIndex + 1; index < source.length; index += 1) {
             const char = source[index];
             if (quote) {
@@ -944,35 +553,26 @@
               return index;
             }
           }
-
           return -1;
         }
-
         function parseTagName(rawTag, isClosing = false) {
           const offset = isClosing ? 2 : 1;
           const match = rawTag.slice(offset).match(/^\s*([A-Za-z][\w:.-]*)/);
           return match ? match[1].toLowerCase() : "";
         }
-
         function isSelfClosingTag(rawTag) {
           const source = rawTag.trim();
           let index = 1;
-
           while (index < source.length && /\s/.test(source[index])) {
             index += 1;
-          }
-          while (index < source.length && /[\w:.-]/.test(source[index])) {
+          } while (index < source.length && /[\w:.-]/.test(source[index])) {
             index += 1;
           }
-
           let state = "before-attribute";
           let quote = "";
-          const isClosingMarker = (markerIndex) =>
-            /^\/\s*>$/.test(source.slice(markerIndex));
-
+          const isClosingMarker =(markerIndex) => /^\/\s*>$/.test(source.slice(markerIndex));
           while (index < source.length) {
             const char = source[index];
-
             if (state === "quoted-value") {
               if (char === quote) {
                 quote = "";
@@ -981,7 +581,6 @@
               index += 1;
               continue;
             }
-
             if (state === "unquoted-value") {
               if (char === ">") {
                 return false;
@@ -992,7 +591,6 @@
               index += 1;
               continue;
             }
-
             if (state === "before-value") {
               if (/\s/.test(char)) {
                 index += 1;
@@ -1010,7 +608,6 @@
               state = "unquoted-value";
               continue;
             }
-
             if (state === "attribute-name") {
               if (char === "=") {
                 state = "before-value";
@@ -1031,7 +628,6 @@
               index += 1;
               continue;
             }
-
             if (state === "after-attribute-name") {
               if (/\s/.test(char)) {
                 index += 1;
@@ -1051,7 +647,6 @@
               state = "attribute-name";
               continue;
             }
-
             if (state === "after-quoted-value") {
               if (/\s/.test(char)) {
                 state = "before-attribute";
@@ -1067,7 +662,6 @@
               state = "attribute-name";
               continue;
             }
-
             if (/\s/.test(char)) {
               index += 1;
               continue;
@@ -1080,15 +674,10 @@
             }
             state = "attribute-name";
           }
-
           return false;
         }
-
         function getTagAttribute(rawTag, attributeName) {
-          const pattern = new RegExp(
-            `(?:^|\\s)${escapeRegExp(attributeName)}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`,
-            "i",
-          );
+          const pattern = new RegExp(`(?:^|\\s)${escapeRegExp(attributeName)}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, "i",);
           const inner = rawTag.replace(/^<\/?\s*[\w:.-]+/, "");
           const match = pattern.exec(inner);
           if (!match) {
@@ -1096,7 +685,6 @@
           }
           return match[1] ?? match[2] ?? match[3] ?? "";
         }
-
         function findRawClosingTag(source, startIndex, tagName) {
           const pattern = new RegExp(`<\\/\\s*${escapeRegExp(tagName)}\\s*>`, "ig");
           pattern.lastIndex = startIndex;
@@ -1110,36 +698,35 @@
             raw: match[0],
           };
         }
-
         function tokenizeHtml(input) {
           const source = normalizeNewlines(input);
           const tokens = [];
           let index = 0;
-
           while (index < source.length) {
             if (source.startsWith("<!--", index)) {
               const closingIndex = source.indexOf("-->", index + 4);
               const end = closingIndex === -1 ? source.length : closingIndex + 3;
-              tokens.push({ type: "comment", raw: source.slice(index, end) });
+              tokens.push({
+                type: "comment",
+                raw: source.slice(index, end)
+              });
               index = end;
               continue;
             }
-
             if (source.startsWith("<![CDATA[", index)) {
               const closingIndex = source.indexOf("]]>", index + 9);
               const end = closingIndex === -1 ? source.length : closingIndex + 3;
-              tokens.push({ type: "declaration", raw: source.slice(index, end) });
+              tokens.push({
+                type: "declaration",
+                raw: source.slice(index, end)
+              });
               index = end;
               continue;
             }
-
             if (source[index] === "<") {
               if (source.startsWith("<?", index)) {
                 const processingEnd = source.indexOf("?>", index + 2);
-                const end =
-                  processingEnd === -1
-                    ? findTagEnd(source, index)
-                    : processingEnd + 1;
+                const end = processingEnd === -1 ? findTagEnd(source, index) : processingEnd + 1;
                 if (end !== -1) {
                   tokens.push({
                     type: "declaration",
@@ -1149,7 +736,6 @@
                   continue;
                 }
               }
-
               if (source.startsWith("<!", index)) {
                 const end = findTagEnd(source, index);
                 if (end !== -1) {
@@ -1161,20 +747,22 @@
                   continue;
                 }
               }
-
               if (/^<\s*\//.test(source.slice(index, index + 4))) {
                 const end = findTagEnd(source, index);
                 if (end !== -1) {
                   const raw = source.slice(index, end + 1);
                   const name = parseTagName(raw, true);
                   if (name) {
-                    tokens.push({ type: "end", name, raw });
+                    tokens.push({
+                      type: "end",
+                      name,
+                      raw
+                    });
                     index = end + 1;
                     continue;
                   }
                 }
               }
-
               if (/^<\s*[A-Za-z]/.test(source.slice(index, index + 4))) {
                 const end = findTagEnd(source, index);
                 if (end !== -1) {
@@ -1182,14 +770,14 @@
                   const name = parseTagName(raw, false);
                   if (name) {
                     const selfClosing = isSelfClosingTag(raw);
-                    tokens.push({ type: "start", name, raw, selfClosing });
+                    tokens.push({
+                      type: "start",
+                      name,
+                      raw,
+                      selfClosing
+                    });
                     index = end + 1;
-
-                    if (
-                      RAW_TEXT_ELEMENTS.has(name) &&
-                      !selfClosing &&
-                      !VOID_ELEMENTS.has(name)
-                    ) {
+                    if (RAW_TEXT_ELEMENTS.has(name) && !selfClosing && !VOID_ELEMENTS.has(name)) {
                       const closingTag = findRawClosingTag(source, index, name);
                       const rawEnd = closingTag ? closingTag.start : source.length;
                       tokens.push({
@@ -1198,7 +786,11 @@
                         raw: source.slice(index, rawEnd),
                       });
                       if (closingTag) {
-                        tokens.push({ type: "end", name, raw: closingTag.raw });
+                        tokens.push({
+                          type: "end",
+                          name,
+                          raw: closingTag.raw
+                        });
                         index = closingTag.end;
                       } else {
                         index = source.length;
@@ -1209,63 +801,59 @@
                 }
               }
             }
-
             const nextTag = source.indexOf("<", index + 1);
             const end = nextTag === -1 ? source.length : nextTag;
-            tokens.push({ type: "text", raw: source.slice(index, end) });
+            tokens.push({
+              type: "text",
+              raw: source.slice(index, end)
+            });
             index = end;
           }
-
           return tokens;
         }
-
         function shouldAutoClose(openName, incomingName) {
           if (openName === "li" && incomingName === "li") {
             return true;
           }
-          if ((openName === "dt" || openName === "dd") && (incomingName === "dt" || incomingName === "dd")) {
+          if ((openName === "dt" || openName === "dd") &&(incomingName === "dt" || incomingName === "dd")) {
             return true;
           }
           if (openName === "p" && P_CLOSING_START_TAGS.has(incomingName)) {
             return true;
           }
-          if ((openName === "rt" || openName === "rp") && (incomingName === "rt" || incomingName === "rp")) {
+          if ((openName === "rt" || openName === "rp") &&(incomingName === "rt" || incomingName === "rp")) {
             return true;
           }
-          if (openName === "option" && (incomingName === "option" || incomingName === "optgroup")) {
+          if (openName === "option" &&(incomingName === "option" || incomingName === "optgroup")) {
             return true;
           }
           if (openName === "optgroup" && incomingName === "optgroup") {
             return true;
           }
-          if ((openName === "thead" || openName === "tbody" || openName === "tfoot") && (incomingName === "tbody" || incomingName === "tfoot")) {
+          if ((openName === "thead" || openName === "tbody" || openName === "tfoot") &&(incomingName === "tbody" || incomingName === "tfoot")) {
             return true;
           }
           if (openName === "tr" && incomingName === "tr") {
             return true;
           }
-          if ((openName === "td" || openName === "th") && (incomingName === "td" || incomingName === "th")) {
+          if ((openName === "td" || openName === "th") &&(incomingName === "td" || incomingName === "th")) {
             return true;
           }
           return false;
         }
-
         function buildHtmlTree(tokens) {
-          const root = { type: "root", children: [] };
+          const root = {
+            type: "root",
+            children: []
+          };
           const stack = [root];
-
-          const current = () => stack[stack.length - 1];
-          const append = (node) => current().children.push(node);
-
+          const current =() => stack[stack.length - 1];
+          const append =(node) => current().children.push(node);
           for (const token of tokens) {
             if (token.type === "start") {
-              while (
-                stack.length > 1 &&
-                shouldAutoClose(current().name, token.name)
-              ) {
+              while (stack.length > 1 && shouldAutoClose(current().name, token.name)) {
                 stack.pop();
               }
-
               const node = {
                 type: "element",
                 name: token.name,
@@ -1280,7 +868,6 @@
               }
               continue;
             }
-
             if (token.type === "end") {
               let matchingIndex = -1;
               for (let stackIndex = stack.length - 1; stackIndex > 0; stackIndex -= 1) {
@@ -1289,31 +876,29 @@
                   break;
                 }
               }
-
               if (matchingIndex === -1) {
-                append({ type: "orphan-end", raw: token.raw });
+                append({
+                  type: "orphan-end",
+                  raw: token.raw
+                });
                 continue;
               }
-
               stack[matchingIndex].closeRaw = token.raw;
               stack.length = matchingIndex;
               continue;
             }
-
-            append({ ...token });
+            append({
+              ...token
+            });
           }
-
           return root;
         }
-
         function collapseHtmlText(text) {
           return normalizeNewlines(text).replace(/\s+/g, " ");
         }
-
         function isInlineElementName(name) {
           return INLINE_ELEMENTS.has(name) || name.includes("-");
         }
-
         function isInlineNode(node) {
           if (node.type === "text") {
             return true;
@@ -1323,7 +908,6 @@
           }
           return isInlineElementName(node.name) && canSerializeInline(node);
         }
-
         function canSerializeInline(node) {
           if (node.type === "text") {
             return true;
@@ -1338,14 +922,9 @@
             if (child.type === "text") {
               return true;
             }
-            return (
-              child.type === "element" &&
-              isInlineElementName(child.name) &&
-              canSerializeInline(child)
-            );
+            return(child.type === "element" && isInlineElementName(child.name) && canSerializeInline(child));
           });
         }
-
         function serializeInline(node) {
           if (node.type === "text") {
             return collapseHtmlText(node.raw);
@@ -1353,26 +932,17 @@
           if (node.type !== "element") {
             return "";
           }
-
           const open = normalizeTagWhitespace(node.openRaw);
           if (node.selfClosing || VOID_ELEMENTS.has(node.name)) {
             return open;
           }
           const content = node.children.map(serializeInline).join("");
-          const close = node.closeRaw
-            ? normalizeTagWhitespace(node.closeRaw)
-            : "";
+          const close = node.closeRaw ? normalizeTagWhitespace(node.closeRaw) : "";
           return `${open}${content}${close}`;
         }
-
         function normalizeInlineRun(nodes) {
-          return nodes
-            .map(serializeInline)
-            .join("")
-            .replace(/\s+/g, " ")
-            .trim();
+          return nodes.map(serializeInline).join("").replace(/\s+/g, " ").trim();
         }
-
         function indentMultilineRaw(raw, level, indentUnit) {
           const normalized = normalizeNewlines(raw).trim();
           if (!normalized) {
@@ -1380,7 +950,6 @@
           }
           return normalized.split("\n").map((line) => `${repeatIndent(level, indentUnit)}${line.trimEnd()}`);
         }
-
         function formatJsonScript(raw, indentUnit) {
           try {
             const parsed = JSON.parse(raw);
@@ -1389,15 +958,9 @@
             return normalizeNewlines(raw).trim();
           }
         }
-
         function isJavaScriptElement(node) {
-          const type = (getTagAttribute(node.openRaw, "type") ?? "")
-            .trim()
-            .toLowerCase();
-          const language = (getTagAttribute(node.openRaw, "language") ?? "")
-            .trim()
-            .toLowerCase();
-
+          const type =(getTagAttribute(node.openRaw, "type") ?? "").trim().toLowerCase();
+          const language =(getTagAttribute(node.openRaw, "language") ?? "").trim().toLowerCase();
           if (language === "javascript" || language === "ecmascript") {
             return true;
           }
@@ -1406,39 +969,23 @@
           }
           return /^(?:text|application)\/(?:javascript|ecmascript)$/.test(type);
         }
-
         function isJsonElement(node) {
-          const type = (getTagAttribute(node.openRaw, "type") ?? "")
-            .trim()
-            .toLowerCase();
-          return (
-            type === "application/json" ||
-            type === "application/ld+json" ||
-            type === "importmap" ||
-            type === "speculationrules"
-          );
+          const type =(getTagAttribute(node.openRaw, "type") ?? "").trim().toLowerCase();
+          return(type === "application/json" || type === "application/ld+json" || type === "importmap" || type === "speculationrules");
         }
-
         function isCssElement(node) {
-          const type = (getTagAttribute(node.openRaw, "type") ?? "")
-            .trim()
-            .toLowerCase();
+          const type =(getTagAttribute(node.openRaw, "type") ?? "").trim().toLowerCase();
           return !type || type === "text/css";
         }
-
         function renderRawElement(node, level, options) {
           const indent = repeatIndent(level, options.indentUnit);
           const open = normalizeTagWhitespace(node.openRaw);
-          const close = node.closeRaw
-            ? normalizeTagWhitespace(node.closeRaw)
-            : "";
+          const close = node.closeRaw ? normalizeTagWhitespace(node.closeRaw) : "";
           const rawNode = node.children.find((child) => child.type === "raw");
           const raw = rawNode ? rawNode.raw : "";
-
           if (PRESERVE_CONTENT_ELEMENTS.has(node.name)) {
             return [`${indent}${open}${raw}${close}`];
           }
-
           let formatted = "";
           if (node.name === "style") {
             formatted = isCssElement(node) ? formatCss(raw, options) : normalizeNewlines(raw).trim();
@@ -1451,11 +998,9 @@
               formatted = normalizeNewlines(raw).trim();
             }
           }
-
           if (!formatted) {
             return [`${indent}${open}${close}`];
           }
-
           const contentIndent = repeatIndent(level + 1, options.indentUnit);
           const lines = [`${indent}${open}`];
           for (const line of formatted.split("\n")) {
@@ -1466,25 +1011,19 @@
           }
           return lines;
         }
-
         function renderCommentOrDeclaration(node, level, options) {
           const indent = repeatIndent(level, options.indentUnit);
           const normalized = normalizeNewlines(node.raw).trim();
           if (!normalized.includes("\n")) {
-            const value =
-              node.type === "declaration"
-                ? normalizeTagWhitespace(normalized)
-                : normalized;
+            const value = node.type === "declaration" ? normalizeTagWhitespace(normalized) : normalized;
             return [`${indent}${value}`];
           }
           return normalized.split("\n").map((line) => `${indent}${line.trimEnd()}`);
         }
-
         function renderChildren(children, level, options) {
           const lines = [];
           let inlineRun = [];
-
-          const flushInlineRun = () => {
+          const flushInlineRun =() => {
             if (!inlineRun.length) {
               return;
             }
@@ -1494,72 +1033,52 @@
             }
             inlineRun = [];
           };
-
           for (const child of children) {
             if (child.type === "text" && !collapseHtmlText(child.raw).trim()) {
               continue;
             }
-
             if (isInlineNode(child)) {
               inlineRun.push(child);
               continue;
             }
-
             flushInlineRun();
             lines.push(...renderHtmlNode(child, level, options));
           }
-
           flushInlineRun();
           return lines;
         }
-
         function renderHtmlNode(node, level, options) {
           const indent = repeatIndent(level, options.indentUnit);
-
           if (node.type === "comment" || node.type === "declaration") {
             return renderCommentOrDeclaration(node, level, options);
           }
-
           if (node.type === "orphan-end") {
             return [`${indent}${normalizeTagWhitespace(node.raw)}`];
           }
-
           if (node.type === "raw") {
             return indentMultilineRaw(node.raw, level, options.indentUnit);
           }
-
           if (node.type === "text") {
             const value = collapseHtmlText(node.raw).trim();
             return value ? [`${indent}${value}`] : [];
           }
-
           if (node.type !== "element") {
             return [];
           }
-
           if (RAW_TEXT_ELEMENTS.has(node.name) && !node.selfClosing) {
             return renderRawElement(node, level, options);
           }
-
           const open = normalizeTagWhitespace(node.openRaw);
           if (node.selfClosing || VOID_ELEMENTS.has(node.name)) {
             return [`${indent}${open}`];
           }
-
-          const close = node.closeRaw
-            ? normalizeTagWhitespace(node.closeRaw)
-            : "";
-
+          const close = node.closeRaw ? normalizeTagWhitespace(node.closeRaw) : "";
           if (canSerializeInline(node)) {
             const compact = serializeInline(node).replace(/\s+/g, " ").trim();
-            if (
-              compact.length + indent.length <= options.maxLineLength ||
-              isInlineElementName(node.name)
-            ) {
+            if (compact.length + indent.length <= options.maxLineLength || isInlineElementName(node.name)) {
               return [`${indent}${compact}`];
             }
           }
-
           const lines = [`${indent}${open}`];
           lines.push(...renderChildren(node.children, level + 1, options));
           if (close) {
@@ -1567,7 +1086,6 @@
           }
           return lines;
         }
-
         function formatHtml(input, userOptions = {}) {
           const options = {
             indentUnit: "  ",
@@ -1579,19 +1097,13 @@
           if (!source) {
             return "";
           }
-
           const tree = buildHtmlTree(tokenizeHtml(source));
-          const output = renderChildren(tree.children, 0, options)
-            .join("\n")
-            .replace(/[ \t]+$/gm, "")
-            .trim();
+          const output = renderChildren(tree.children, 0, options).join("\n").replace(/[ \t]+$/gm, "").trim();
           return output ? `${output}${options.endWithNewline ? "\n" : ""}` : "";
         }
-
         function readCssUrl(source, startIndex) {
           let index = startIndex + 4;
           let quote = "";
-
           while (index < source.length) {
             const char = source[index];
             if (quote) {
@@ -1619,26 +1131,15 @@
             }
             index += 1;
           }
-
           return source.length;
         }
-
-        function cssColonNeedsSpace(
-          tokens,
-          tokenIndex,
-          parenDepth,
-          bracketDepth,
-          parenFunctions,
-        ) {
-          if (
-            parenFunctions.some((name) => CSS_SELECTOR_FUNCTIONS.has(name))
-          ) {
+        function cssColonNeedsSpace(tokens, tokenIndex, parenDepth, bracketDepth, parenFunctions,) {
+          if (parenFunctions.some((name) => CSS_SELECTOR_FUNCTIONS.has(name))) {
             return false;
           }
           if (parenDepth > 0 || bracketDepth > 0) {
             return true;
           }
-
           let localParenDepth = parenDepth;
           let localBracketDepth = bracketDepth;
           for (let index = tokenIndex + 1; index < tokens.length; index += 1) {
@@ -1671,25 +1172,18 @@
               }
             }
           }
-
           return true;
         }
-
         function readCssNumber(source, startIndex) {
-          const match = source.slice(startIndex).match(
-            /^-?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:[eE][+-]?\d+)?(?:%|[A-Za-z][A-Za-z0-9-]*)?/,
-          );
+          const match = source.slice(startIndex).match(/^-?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:[eE][+-]?\d+)?(?:%|[A-Za-z][A-Za-z0-9-]*)?/,);
           return match ? startIndex + match[0].length : startIndex;
         }
-
         function tokenizeCss(input) {
           const source = normalizeNewlines(input);
           const tokens = [];
           let index = 0;
-
           while (index < source.length) {
             const char = source[index];
-
             if (/\s/.test(char)) {
               const start = index;
               while (index < source.length && /\s/.test(source[index])) {
@@ -1702,22 +1196,25 @@
               });
               continue;
             }
-
             if (source.startsWith("/*", index)) {
               const endIndex = source.indexOf("*/", index + 2);
               const end = endIndex === -1 ? source.length : endIndex + 2;
-              tokens.push({ type: "comment", value: source.slice(index, end) });
+              tokens.push({
+                type: "comment",
+                value: source.slice(index, end)
+              });
               index = end;
               continue;
             }
-
             if (/^url\(/i.test(source.slice(index))) {
               const end = readCssUrl(source, index);
-              tokens.push({ type: "url", value: source.slice(index, end) });
+              tokens.push({
+                type: "url",
+                value: source.slice(index, end)
+              });
               index = end;
               continue;
             }
-
             if (char === '"' || char === "'") {
               const quote = char;
               const start = index;
@@ -1733,62 +1230,61 @@
                 }
                 index += 1;
               }
-              tokens.push({ type: "string", value: source.slice(start, index) });
+              tokens.push({
+                type: "string",
+                value: source.slice(start, index)
+              });
               continue;
             }
-
-            if (
-              /\d/.test(char) ||
-              (char === "." && /\d/.test(source[index + 1] ?? "")) ||
-              (char === "-" &&
-                (/\d/.test(source[index + 1] ?? "") ||
-                  (source[index + 1] === "." && /\d/.test(source[index + 2] ?? ""))))
-            ) {
+            if (/\d/.test(char) ||(char === "." && /\d/.test(source[index + 1] ?? "")) ||(char === "-" &&(/\d/.test(source[index + 1] ?? "") ||(source[index + 1] === "." && /\d/.test(source[index + 2] ?? ""))))) {
               const end = readCssNumber(source, index);
               if (end > index) {
-                tokens.push({ type: "number", value: source.slice(index, end) });
+                tokens.push({
+                  type: "number",
+                  value: source.slice(index, end)
+                });
                 index = end;
                 continue;
               }
             }
-
             if ("{}:;,()[]".includes(char)) {
-              tokens.push({ type: "punct", value: char });
+              tokens.push({
+                type: "punct",
+                value: char
+              });
               index += 1;
               continue;
             }
-
             if (">+~".includes(char)) {
-              tokens.push({ type: "operator", value: char });
+              tokens.push({
+                type: "operator",
+                value: char
+              });
               index += 1;
               continue;
             }
-
             const start = index;
-            while (
-              index < source.length &&
-              !/\s/.test(source[index]) &&
-              !"{}:;,()[]\"'".includes(source[index]) &&
-              !">+~".includes(source[index]) &&
-              !source.startsWith("/*", index)
-            ) {
+            while (index < source.length && !/\s/.test(source[index]) && !"{}:;,()[]\"'".includes(source[index]) && !">+~".includes(source[index]) && !source.startsWith("/*", index)) {
               index += 1;
             }
-            tokens.push({ type: "word", value: source.slice(start, index) });
+            tokens.push({
+              type: "word",
+              value: source.slice(start, index)
+            });
           }
-
           return tokens;
         }
-
         function nextSignificantToken(tokens, startIndex) {
           for (let index = startIndex + 1; index < tokens.length; index += 1) {
             if (tokens[index].type !== "space") {
-              return { token: tokens[index], index };
+              return {
+                token: tokens[index],
+                index
+              };
             }
           }
           return null;
         }
-
         function formatCss(input, userOptions = {}) {
           const options = {
             indentUnit: "  ",
@@ -1802,24 +1298,17 @@
           let bracketDepth = 0;
           let pendingSpace = false;
           const parenFunctions = [];
-
-          const write = (value, forceSpace = false) => {
+          const write =(value, forceSpace = false) => {
             if (!value) {
               return;
             }
-            if (
-              (forceSpace || pendingSpace) &&
-              line &&
-              !/[\s([{]$/.test(line) &&
-              !/^[,;:)}\]]/.test(value)
-            ) {
+            if ((forceSpace || pendingSpace) && line && !/[\s([{]$/.test(line) && !/^[,;:)}\]]/.test(value)) {
               line += " ";
             }
             pendingSpace = false;
             line += value;
           };
-
-          const newline = (force = false) => {
+          const newline =(force = false) => {
             const trimmed = line.trimEnd();
             if (trimmed) {
               lines.push(`${repeatIndent(depth, options.indentUnit)}${trimmed.trimStart()}`);
@@ -1829,16 +1318,13 @@
             line = "";
             pendingSpace = false;
           };
-
           for (let index = 0; index < tokens.length; index += 1) {
             const token = tokens[index];
             const value = token.value;
-
             if (token.type === "space") {
               pendingSpace = true;
               continue;
             }
-
             if (token.type === "comment") {
               if (line.trim()) {
                 write(token.value, true);
@@ -1852,14 +1338,12 @@
               }
               continue;
             }
-
             if (value === "{") {
               write("{", true);
               newline();
               depth += 1;
               continue;
             }
-
             if (value === "}") {
               newline();
               depth = Math.max(0, depth - 1);
@@ -1870,7 +1354,6 @@
               }
               continue;
             }
-
             if (value === ";") {
               line = line.trimEnd();
               pendingSpace = false;
@@ -1882,21 +1365,13 @@
               }
               continue;
             }
-
             if (value === ":") {
               line = line.trimEnd();
               pendingSpace = false;
               write(":");
-              pendingSpace = cssColonNeedsSpace(
-                tokens,
-                index,
-                parenDepth,
-                bracketDepth,
-                parenFunctions,
-              );
+              pendingSpace = cssColonNeedsSpace(tokens, index, parenDepth, bracketDepth, parenFunctions,);
               continue;
             }
-
             if (value === ",") {
               line = line.trimEnd();
               pendingSpace = false;
@@ -1908,18 +1383,14 @@
               }
               continue;
             }
-
             if (value === "(") {
               line = line.trimEnd();
               const previous = previousSignificantToken(tokens, index)?.token;
-              parenFunctions.push(
-                previous?.type === "word" ? previous.value.toLowerCase() : "",
-              );
+              parenFunctions.push(previous?.type === "word" ? previous.value.toLowerCase() : "",);
               write("(");
               parenDepth += 1;
               continue;
             }
-
             if (value === ")") {
               line = line.trimEnd();
               pendingSpace = false;
@@ -1928,14 +1399,12 @@
               parenFunctions.pop();
               continue;
             }
-
             if (value === "[") {
               line = line.trimEnd();
               write("[");
               bracketDepth += 1;
               continue;
             }
-
             if (value === "]") {
               line = line.trimEnd();
               pendingSpace = false;
@@ -1943,29 +1412,23 @@
               bracketDepth = Math.max(0, bracketDepth - 1);
               continue;
             }
-
             if (token.type === "operator") {
               line = line.trimEnd();
               write(value, true);
               pendingSpace = true;
               continue;
             }
-
             write(value);
           }
-
           newline();
           return lines.join("\n").replace(/[ \t]+$/gm, "").trim();
         }
-
         function isIdentifierStart(char) {
-          return /[A-Za-z_$]/.test(char) || (char && char.charCodeAt(0) > 127);
+          return /[A-Za-z_$]/.test(char) ||(char && char.charCodeAt(0) > 127);
         }
-
         function isIdentifierPart(char) {
-          return /[A-Za-z0-9_$]/.test(char) || (char && char.charCodeAt(0) > 127);
+          return /[A-Za-z0-9_$]/.test(char) ||(char && char.charCodeAt(0) > 127);
         }
-
         function readJsString(source, startIndex, quote) {
           let index = startIndex + 1;
           while (index < source.length) {
@@ -1983,7 +1446,6 @@
           }
           return source.length;
         }
-
         function regexCanStartAfter(token) {
           if (!token || token.closesControl) {
             return true;
@@ -1999,11 +1461,9 @@
           }
           return false;
         }
-
         function readJsRegex(source, startIndex) {
           let index = startIndex + 1;
           let inCharacterClass = false;
-
           while (index < source.length) {
             const char = source[index];
             if (char === "\\") {
@@ -2032,64 +1492,69 @@
             }
             index += 1;
           }
-
           return startIndex + 1;
         }
-
         function readTemplateExpression(source, startIndex) {
           let index = startIndex;
           let braceDepth = 1;
           let previousToken = null;
-
           while (index < source.length && braceDepth > 0) {
             const char = source[index];
-
             if (char === '"' || char === "'") {
               index = readJsString(source, index, char);
-              previousToken = { type: "string", value: char };
+              previousToken = {
+                type: "string",
+                value: char
+              };
               continue;
             }
-
             if (char === "`") {
               index = readTemplateLiteral(source, index);
-              previousToken = { type: "template", value: "`" };
+              previousToken = {
+                type: "template",
+                value: "`"
+              };
               continue;
             }
-
             if (source.startsWith("//", index)) {
               const newlineIndex = source.indexOf("\n", index + 2);
               index = newlineIndex === -1 ? source.length : newlineIndex + 1;
               continue;
             }
-
             if (source.startsWith("/*", index)) {
               const closingIndex = source.indexOf("*/", index + 2);
               index = closingIndex === -1 ? source.length : closingIndex + 2;
               continue;
             }
-
             if (char === "/" && regexCanStartAfter(previousToken)) {
               const regexEnd = readJsRegex(source, index);
               if (regexEnd > index + 1) {
                 index = regexEnd;
-                previousToken = { type: "regex", value: "/" };
+                previousToken = {
+                  type: "regex",
+                  value: "/"
+                };
                 continue;
               }
             }
-
             if (char === "{") {
               braceDepth += 1;
-              previousToken = { type: "punct", value: char };
+              previousToken = {
+                type: "punct",
+                value: char
+              };
               index += 1;
               continue;
             }
             if (char === "}") {
               braceDepth -= 1;
-              previousToken = { type: "punct", value: char };
+              previousToken = {
+                type: "punct",
+                value: char
+              };
               index += 1;
               continue;
             }
-
             if (!/\s/.test(char)) {
               if (isIdentifierStart(char)) {
                 const start = index;
@@ -2111,13 +1576,10 @@
             }
             index += 1;
           }
-
           return index;
         }
-
         function readTemplateLiteral(source, startIndex) {
           let index = startIndex + 1;
-
           while (index < source.length) {
             if (source[index] === "\\") {
               index += 2;
@@ -2132,18 +1594,13 @@
             }
             index += 1;
           }
-
           return source.length;
         }
-
         function readJsNumber(source, startIndex) {
           const rest = source.slice(startIndex);
-          const match = rest.match(
-            /^(?:0[xX][\dA-Fa-f](?:_?[\dA-Fa-f])*|0[bB][01](?:_?[01])*|0[oO][0-7](?:_?[0-7])*|(?:\d(?:_?\d)*)?\.(?:\d(?:_?\d)*)?(?:[eE][+-]?\d(?:_?\d)*)?|\d(?:_?\d)*(?:[eE][+-]?\d(?:_?\d)*)?)(?:n)?/,
-          );
+          const match = rest.match(/^(?:0[xX][\dA-Fa-f](?:_?[\dA-Fa-f])*|0[bB][01](?:_?[01])*|0[oO][0-7](?:_?[0-7])*|(?:\d(?:_?\d)*)?\.(?:\d(?:_?\d)*)?(?:[eE][+-]?\d(?:_?\d)*)?|\d(?:_?\d)*(?:[eE][+-]?\d(?:_?\d)*)?)(?:n)?/,);
           return match ? startIndex + match[0].length : startIndex + 1;
         }
-
         function matchJsOperator(source, index) {
           for (const operator of JS_OPERATORS) {
             if (source.startsWith(operator, index)) {
@@ -2152,91 +1609,104 @@
           }
           return "";
         }
-
         function tokenizeJavaScript(input) {
           const source = normalizeNewlines(input);
           const tokens = [];
           let index = 0;
           let previousSignificant = null;
           const parenKinds = [];
-
-          const push = (token) => {
+          const push =(token) => {
             tokens.push(token);
             if (token.type !== "space" && token.type !== "comment-line" && token.type !== "comment-block") {
               previousSignificant = token;
             }
           };
-
           while (index < source.length) {
             const char = source[index];
-
             if (/\s/.test(char)) {
               const start = index;
               while (index < source.length && /\s/.test(source[index])) {
                 index += 1;
               }
               const value = source.slice(start, index);
-              push({ type: "space", value, hasNewline: value.includes("\n") });
+              push({
+                type: "space",
+                value,
+                hasNewline: value.includes("\n")
+              });
               continue;
             }
-
             if (source.startsWith("//", index)) {
               const newlineIndex = source.indexOf("\n", index + 2);
               const end = newlineIndex === -1 ? source.length : newlineIndex;
-              push({ type: "comment-line", value: source.slice(index, end) });
+              push({
+                type: "comment-line",
+                value: source.slice(index, end)
+              });
               index = end;
               continue;
             }
-
             if (source.startsWith("/*", index)) {
               const closingIndex = source.indexOf("*/", index + 2);
               const end = closingIndex === -1 ? source.length : closingIndex + 2;
-              push({ type: "comment-block", value: source.slice(index, end) });
+              push({
+                type: "comment-block",
+                value: source.slice(index, end)
+              });
               index = end;
               continue;
             }
-
             if (char === '"' || char === "'") {
               const end = readJsString(source, index, char);
-              push({ type: "string", value: source.slice(index, end) });
+              push({
+                type: "string",
+                value: source.slice(index, end)
+              });
               index = end;
               continue;
             }
-
             if (char === "`") {
               const end = readTemplateLiteral(source, index);
-              push({ type: "template", value: source.slice(index, end) });
+              push({
+                type: "template",
+                value: source.slice(index, end)
+              });
               index = end;
               continue;
             }
-
             if (char === "/" && regexCanStartAfter(previousSignificant)) {
               const end = readJsRegex(source, index);
               if (end > index + 1) {
-                push({ type: "regex", value: source.slice(index, end) });
+                push({
+                  type: "regex",
+                  value: source.slice(index, end)
+                });
                 index = end;
                 continue;
               }
             }
-
             if (index === 0 && source.startsWith("#!", index)) {
               const newlineIndex = source.indexOf("\n", index + 2);
               const end = newlineIndex === -1 ? source.length : newlineIndex;
-              push({ type: "comment-line", value: source.slice(index, end) });
+              push({
+                type: "comment-line",
+                value: source.slice(index, end)
+              });
               index = end;
               continue;
             }
-
             if (char === "#" && isIdentifierStart(source[index + 1] ?? "")) {
               const start = index;
               index += 2;
               while (index < source.length && isIdentifierPart(source[index])) {
                 index += 1;
               }
-              push({ type: "word", value: source.slice(start, index) });
+              push({
+                type: "word",
+                value: source.slice(start, index)
+              });
               continue;
             }
-
             if (isIdentifierStart(char)) {
               const start = index;
               index += 1;
@@ -2245,35 +1715,31 @@
               }
               const value = source.slice(start, index);
               const keyword = JS_KEYWORDS.has(value);
-              push({ type: keyword ? "keyword" : "word", value });
+              push({
+                type: keyword ? "keyword" : "word",
+                value
+              });
               continue;
             }
-
-            if (/\d/.test(char) || (char === "." && /\d/.test(source[index + 1] ?? ""))) {
+            if (/\d/.test(char) ||(char === "." && /\d/.test(source[index + 1] ?? ""))) {
               const end = readJsNumber(source, index);
-              push({ type: "number", value: source.slice(index, end) });
+              push({
+                type: "number",
+                value: source.slice(index, end)
+              });
               index = end;
               continue;
             }
-
             if ("{}()[];,:.".includes(char)) {
-              const token = { type: "punct", value: char };
+              const token = {
+                type: "punct",
+                value: char
+              };
               if (char === "(") {
                 const previousInfo = previousSignificantToken(tokens, tokens.length);
-                const previousBeforeAwait =
-                  previousSignificant?.value === "await" && previousInfo
-                    ? previousSignificantToken(tokens, previousInfo.index)?.token
-                    : null;
-                const isControl =
-                  (previousSignificant?.type === "keyword" &&
-                    CONTROL_PAREN_KEYWORDS.has(previousSignificant.value)) ||
-                  (previousSignificant?.value === "await" &&
-                    previousBeforeAwait?.value === "for");
-                const controlKeyword = isControl
-                  ? previousSignificant?.value === "await"
-                    ? "for"
-                    : previousSignificant.value
-                  : "";
+                const previousBeforeAwait = previousSignificant?.value === "await" && previousInfo ? previousSignificantToken(tokens, previousInfo.index)?.token : null;
+                const isControl =(previousSignificant?.type === "keyword" && CONTROL_PAREN_KEYWORDS.has(previousSignificant.value)) ||(previousSignificant?.value === "await" && previousBeforeAwait?.value === "for");
+                const controlKeyword = isControl ? previousSignificant?.value === "await" ? "for" : previousSignificant.value : "";
                 parenKinds.push(controlKeyword);
               } else if (char === ")") {
                 const controlKeyword = parenKinds.pop() ?? "";
@@ -2284,30 +1750,34 @@
               index += 1;
               continue;
             }
-
             const operator = matchJsOperator(source, index);
             if (operator) {
-              push({ type: "operator", value: operator });
+              push({
+                type: "operator",
+                value: operator
+              });
               index += operator.length;
               continue;
             }
-
-            push({ type: "unknown", value: char });
+            push({
+              type: "unknown",
+              value: char
+            });
             index += 1;
           }
-
           return tokens;
         }
-
         function previousSignificantToken(tokens, startIndex) {
           for (let index = startIndex - 1; index >= 0; index -= 1) {
             if (tokens[index].type !== "space") {
-              return { token: tokens[index], index };
+              return {
+                token: tokens[index],
+                index
+              };
             }
           }
           return null;
         }
-
         function jsTokenCanEndStatement(token) {
           if (!token) {
             return false;
@@ -2323,7 +1793,6 @@
           }
           return token.type === "operator" && ["++", "--"].includes(token.value);
         }
-
         function jsTokenCanStartStatement(token) {
           if (!token) {
             return false;
@@ -2336,7 +1805,6 @@
           }
           return token.type === "operator" && ["!", "~", "+", "-", "++", "--"].includes(token.value);
         }
-
         function shouldPreserveJsNewline(previous, next, atStatementLevel) {
           if (!previous || !next) {
             return false;
@@ -2355,7 +1823,6 @@
           }
           return jsTokenCanEndStatement(previous) && jsTokenCanStartStatement(next);
         }
-
         function isUnaryOperator(token, previous) {
           if (!token || token.type !== "operator") {
             return false;
@@ -2377,7 +1844,6 @@
           }
           return previous.type === "punct" && ["(", "[", "{", ",", ":", ";"].includes(previous.value);
         }
-
         function formatJavaScript(input, userOptions = {}) {
           const options = {
             indentUnit: "  ",
@@ -2395,15 +1861,8 @@
           const ternaryContexts = [];
           const skipped = new Set();
           const braceContexts = [];
-
-          const activeCaseIndent = () =>
-            braceContexts.reduce(
-              (count, context) =>
-                count + (context.kind === "switch" && context.caseActive ? 1 : 0),
-              0,
-            );
-
-          const write = (value, spaceBefore = false) => {
+          const activeCaseIndent =() => braceContexts.reduce((count, context) => count +(context.kind === "switch" && context.caseActive ? 1 : 0), 0,);
+          const write =(value, spaceBefore = false) => {
             if (!value) {
               return;
             }
@@ -2413,12 +1872,10 @@
             pendingSpace = false;
             line += value;
           };
-
-          const newline = (force = false) => {
+          const newline =(force = false) => {
             const trimmed = line.trimEnd();
             if (trimmed) {
-              const effectiveDepth =
-                lineIndentOverride ?? depth + activeCaseIndent();
+              const effectiveDepth = lineIndentOverride ?? depth + activeCaseIndent();
               lines.push(`${repeatIndent(effectiveDepth, options.indentUnit)}${trimmed.trimStart()}`);
             } else if (force && lines.length && lines[lines.length - 1] !== "") {
               lines.push("");
@@ -2427,42 +1884,31 @@
             pendingSpace = false;
             lineIndentOverride = null;
           };
-
           for (let index = 0; index < tokens.length; index += 1) {
             if (skipped.has(index)) {
               continue;
             }
-
             const token = tokens[index];
             const value = token.value;
             const previousInfo = previousSignificantToken(tokens, index);
             const nextInfo = nextSignificantToken(tokens, index);
             const previous = previousInfo?.token ?? null;
             const next = nextInfo?.token ?? null;
-
             if (token.type === "space") {
               const braceContext = braceContexts[braceContexts.length - 1];
-              const atStatementLevel = braceContext
-                ? parenDepth === braceContext.parenDepth &&
-                  bracketDepth === braceContext.bracketDepth
-                : parenDepth === 0 && bracketDepth === 0;
-              if (
-                token.hasNewline &&
-                shouldPreserveJsNewline(previous, next, atStatementLevel)
-              ) {
+              const atStatementLevel = braceContext ? parenDepth === braceContext.parenDepth && bracketDepth === braceContext.bracketDepth : parenDepth === 0 && bracketDepth === 0;
+              if (token.hasNewline && shouldPreserveJsNewline(previous, next, atStatementLevel)) {
                 newline();
               } else {
                 pendingSpace = true;
               }
               continue;
             }
-
             if (token.type === "comment-line") {
               write(value, Boolean(line));
               newline();
               continue;
             }
-
             if (token.type === "comment-block") {
               if (value.includes("\n")) {
                 newline();
@@ -2478,7 +1924,6 @@
               }
               continue;
             }
-
             if (value === "{") {
               if (nextInfo?.token.value === "}") {
                 write("{}", Boolean(line) && !/[([{.]$/.test(line));
@@ -2496,94 +1941,56 @@
               depth += 1;
               continue;
             }
-
             if (value === "}") {
               newline();
               depth = Math.max(0, depth - 1);
               braceContexts.pop();
               write("}");
-              if (
-                next &&
-                (next.value === ";" ||
-                  next.value === "," ||
-                  next.value === ")" ||
-                  next.value === "]" ||
-                  next.value === "." ||
-                  next.value === "?." ||
-                  next.value === ":" ||
-                  next.type === "operator" ||
-                  next.value === "from" ||
-                  next.value === "as" ||
-                  next.value === "satisfies")
-              ) {
-                if (
-                  next.type === "operator" ||
-                  next.value === "from" ||
-                  next.value === "as" ||
-                  next.value === "satisfies"
-                ) {
+              if (next &&(next.value === ";" || next.value === "," || next.value === ")" || next.value === "]" || next.value === "." || next.value === "?." || next.value === ":" || next.type === "operator" || next.value === "from" || next.value === "as" || next.value === "satisfies")) {
+                if (next.type === "operator" || next.value === "from" || next.value === "as" || next.value === "satisfies") {
                   pendingSpace = true;
                 }
                 continue;
               }
-              if (
-                next?.type === "keyword" &&
-                ["else", "catch", "finally", "while"].includes(next.value)
-              ) {
+              if (next?.type === "keyword" && ["else", "catch", "finally", "while"].includes(next.value)) {
                 pendingSpace = true;
                 continue;
               }
               newline();
               continue;
             }
-
             if (value === ";") {
               line = line.trimEnd();
               pendingSpace = false;
               write(";");
               const braceContext = braceContexts[braceContexts.length - 1];
-              if (
-                parenDepth === 0 ||
-                (braceContext &&
-                  parenDepth === braceContext.parenDepth &&
-                  bracketDepth === braceContext.bracketDepth)
-              ) {
+              if (parenDepth === 0 ||(braceContext && parenDepth === braceContext.parenDepth && bracketDepth === braceContext.bracketDepth)) {
                 newline();
               } else {
                 pendingSpace = true;
               }
               continue;
             }
-
             if (value === ",") {
               line = line.trimEnd();
               pendingSpace = false;
               write(",");
               const braceContext = braceContexts[braceContexts.length - 1];
-              if (
-                braceContext &&
-                parenDepth === braceContext.parenDepth &&
-                bracketDepth === braceContext.bracketDepth
-              ) {
+              if (braceContext && parenDepth === braceContext.parenDepth && bracketDepth === braceContext.bracketDepth) {
                 newline();
               } else {
                 pendingSpace = true;
               }
               continue;
             }
-
             if (value === "(") {
               line = line.trimEnd();
               pendingSpace = false;
-              const needsSpace =
-                previous?.type === "keyword" &&
-                (CONTROL_PAREN_KEYWORDS.has(previous.value) ||
-                  ["function", "async"].includes(previous.value));
+              const needsSpace = previous?.type === "keyword" &&(CONTROL_PAREN_KEYWORDS.has(previous.value) || ["function", "async"].includes(previous.value));
               write("(", needsSpace);
               parenDepth += 1;
               continue;
             }
-
             if (value === ")") {
               line = line.trimEnd();
               pendingSpace = false;
@@ -2591,7 +1998,6 @@
               parenDepth = Math.max(0, parenDepth - 1);
               continue;
             }
-
             if (value === "[") {
               line = line.trimEnd();
               const spaceBefore = previous?.type === "keyword" && ["return", "throw", "case"].includes(previous.value);
@@ -2599,7 +2005,6 @@
               bracketDepth += 1;
               continue;
             }
-
             if (value === "]") {
               line = line.trimEnd();
               pendingSpace = false;
@@ -2607,42 +2012,25 @@
               bracketDepth = Math.max(0, bracketDepth - 1);
               continue;
             }
-
             if (value === "." || value === "?.") {
-              const preserveNumericSpace =
-                value === "." &&
-                pendingSpace &&
-                previous?.type === "number" &&
-                /^\d(?:_?\d)*$/.test(previous.value);
+              const preserveNumericSpace = value === "." && pendingSpace && previous?.type === "number" && /^\d(?:_?\d)*$/.test(previous.value);
               line = line.trimEnd();
               pendingSpace = false;
               write(value, preserveNumericSpace);
               continue;
             }
-
             if (value === ":") {
               const ternaryContext = ternaryContexts[ternaryContexts.length - 1];
-              const closesTernary =
-                ternaryContext &&
-                depth === ternaryContext.depth &&
-                parenDepth === ternaryContext.parenDepth &&
-                bracketDepth === ternaryContext.bracketDepth;
-
+              const closesTernary = ternaryContext && depth === ternaryContext.depth && parenDepth === ternaryContext.parenDepth && bracketDepth === ternaryContext.bracketDepth;
               line = line.trimEnd();
               pendingSpace = false;
               write(":", Boolean(closesTernary && line));
-
               if (closesTernary) {
                 ternaryContexts.pop();
                 pendingSpace = true;
                 continue;
               }
-
-              const closesCaseHeader =
-                caseHeader &&
-                depth === caseHeader.depth &&
-                parenDepth === caseHeader.parenDepth &&
-                bracketDepth === caseHeader.bracketDepth;
+              const closesCaseHeader = caseHeader && depth === caseHeader.depth && parenDepth === caseHeader.parenDepth && bracketDepth === caseHeader.bracketDepth;
               if (closesCaseHeader) {
                 caseHeader = null;
                 newline();
@@ -2651,12 +2039,14 @@
               }
               continue;
             }
-
             if (token.type === "operator") {
               if (value === "?") {
-                ternaryContexts.push({ depth, parenDepth, bracketDepth });
+                ternaryContexts.push({
+                  depth,
+                  parenDepth,
+                  bracketDepth
+                });
               }
-
               if (value === "*" && ["function", "yield"].includes(previous?.value)) {
                 line = line.trimEnd();
                 pendingSpace = false;
@@ -2664,7 +2054,6 @@
                 pendingSpace = true;
                 continue;
               }
-
               if (["++", "--"].includes(value)) {
                 line = line.trimEnd();
                 pendingSpace = false;
@@ -2675,13 +2064,11 @@
                 }
                 continue;
               }
-
               if (value === "...") {
                 line = line.trimEnd();
                 write("...", Boolean(line) && previous?.type === "keyword");
                 continue;
               }
-
               const unary = isUnaryOperator(token, previous);
               if (unary) {
                 if (["++", "--"].includes(value) && jsTokenCanEndStatement(previous)) {
@@ -2693,94 +2080,50 @@
                 }
                 continue;
               }
-
               line = line.trimEnd();
               write(value, Boolean(line));
               pendingSpace = true;
               continue;
             }
-
             if (token.type === "keyword") {
               if (["case", "default"].includes(value) && !line.trim()) {
                 let switchContextIndex = -1;
-                for (
-                  let contextIndex = braceContexts.length - 1;
-                  contextIndex >= 0;
-                  contextIndex -= 1
-                ) {
+                for (let contextIndex = braceContexts.length - 1; contextIndex >= 0; contextIndex -= 1) {
                   if (braceContexts[contextIndex].kind === "switch") {
                     switchContextIndex = contextIndex;
                     break;
                   }
                 }
                 if (switchContextIndex !== -1) {
-                  const ancestorCaseIndent = braceContexts
-                    .slice(0, switchContextIndex)
-                    .reduce(
-                      (count, context) =>
-                        count +
-                        (context.kind === "switch" && context.caseActive ? 1 : 0),
-                      0,
-                    );
+                  const ancestorCaseIndent = braceContexts.slice(0, switchContextIndex).reduce((count, context) => count +(context.kind === "switch" && context.caseActive ? 1 : 0), 0,);
                   lineIndentOverride = depth + ancestorCaseIndent;
                   braceContexts[switchContextIndex].caseActive = true;
-                  caseHeader = { depth, parenDepth, bracketDepth };
+                  caseHeader = {
+                    depth,
+                    parenDepth,
+                    bracketDepth
+                  };
                 }
               }
-
               const needsSpace = Boolean(line) && !/[([{.]$/.test(line);
               write(value, needsSpace);
-
-              if (
-                PREFIX_KEYWORDS.has(value) ||
-                [
-                  "const",
-                  "let",
-                  "var",
-                  "class",
-                  "extends",
-                  "import",
-                  "export",
-                  "from",
-                  "return",
-                  "throw",
-                  "case",
-                  "else",
-                  "do",
-                  "try",
-                  "finally",
-                  "function",
-                  "async",
-                  "static",
-                  "get",
-                  "set",
-                ].includes(value)
-              ) {
+              if (PREFIX_KEYWORDS.has(value) || ["const", "let", "var", "class", "extends", "import", "export", "from", "return", "throw", "case", "else", "do", "try", "finally", "function", "async", "static", "get", "set",].includes(value)) {
                 pendingSpace = true;
               }
               continue;
             }
-
             if (WORD_OPERATORS.has(value)) {
               line = line.trimEnd();
               write(value, Boolean(line));
               pendingSpace = true;
               continue;
             }
-
-            const needsSpace =
-              Boolean(line) &&
-              (Boolean(previous?.closesControl) ||
-                (!/[([{.]$/.test(line) &&
-                  !["punct", "operator"].includes(previous?.type ?? "") &&
-                  (previous?.value !== "..." || token.type !== "word")));
+            const needsSpace = Boolean(line) &&(Boolean(previous?.closesControl) ||(!/[([{.]$/.test(line) && !["punct", "operator"].includes(previous?.type ?? "") &&(previous?.value !== "..." || token.type !== "word")));
             write(value, needsSpace);
           }
-
           newline();
           return lines.join("\n").replace(/[ \t]+$/gm, "").trim();
         }
-
         const core = {
           formatHtml,
           formatCss,
@@ -2789,7 +2132,6 @@
           tokenizeCss,
           tokenizeJavaScript,
         };
-
         if (typeof window !== "undefined") {
           window.HtmlFormatterCore = core;
         }
@@ -2797,14 +2139,11 @@
           module.exports = core;
         }
       })();
-
       (() => {
         "use strict";
-
         if (!window.HtmlFormatterCore) {
           throw new Error("Formatter core was not loaded.");
         }
-
         const elements = {
           input: document.querySelector("#sourceInput"),
           output: document.querySelector("#formattedOutput"),
@@ -2821,10 +2160,8 @@
           indentSelect: document.querySelector("#indentSelect"),
           sourcePanel: document.querySelector("#sourcePanel"),
         };
-
         let sourceFileName = "formatted.html";
         let statusTimer = 0;
-
         function getIndentUnit() {
           if (elements.indentSelect.value === "tab") {
             return "\t";
@@ -2832,7 +2169,6 @@
           const size = Number(elements.indentSelect.value);
           return " ".repeat(Number.isFinite(size) ? size : 2);
         }
-
         function formatStats(value) {
           if (!value) {
             return "0行 · 0文字";
@@ -2840,7 +2176,6 @@
           const lineCount = value.split("\n").length;
           return `${lineCount.toLocaleString("ja-JP")}行 · ${value.length.toLocaleString("ja-JP")}文字`;
         }
-
         function updateStats() {
           elements.inputStats.textContent = formatStats(elements.input.value);
           elements.outputStats.textContent = formatStats(elements.output.value);
@@ -2848,18 +2183,15 @@
           elements.copyButton.disabled = !hasOutput;
           elements.downloadButton.disabled = !hasOutput;
         }
-
         function resetEditorScroll(textarea) {
           textarea.setSelectionRange(0, 0);
           textarea.scrollTop = 0;
           textarea.scrollLeft = 0;
         }
-
         function setStatus(message, kind = "neutral", temporary = false) {
           window.clearTimeout(statusTimer);
           elements.status.textContent = message;
           elements.status.dataset.kind = kind;
-
           if (temporary) {
             statusTimer = window.setTimeout(() => {
               elements.status.textContent = "入力内容はブラウザ内だけで処理されます。";
@@ -2867,7 +2199,6 @@
             }, 3500);
           }
         }
-
         function formatDocument() {
           const source = elements.input.value;
           if (!source.trim()) {
@@ -2877,10 +2208,8 @@
             elements.input.focus();
             return;
           }
-
           elements.formatButton.disabled = true;
           elements.formatButton.setAttribute("aria-busy", "true");
-
           try {
             const startedAt = performance.now();
             const result = window.HtmlFormatterCore.formatHtml(source, {
@@ -2892,30 +2221,19 @@
             elements.output.value = result;
             resetEditorScroll(elements.output);
             updateStats();
-            setStatus(
-              `HTML・組み込みCSS・JavaScriptを整形しました（${elapsed.toLocaleString("ja-JP", {
-                maximumFractionDigits: 1,
-              })} ms）。`,
-              "success",
-              true,
-            );
+            setStatus(`HTML・組み込みCSS・JavaScriptを整形しました（${elapsed.toLocaleString("ja-JP", { maximumFractionDigits: 1, })} ms）。`, "success", true,);
           } catch (error) {
             console.error(error);
-            setStatus(
-              `整形できませんでした: ${error instanceof Error ? error.message : String(error)}`,
-              "error",
-            );
+            setStatus(`整形できませんでした: ${error instanceof Error ? error.message : String(error)}`, "error",);
           } finally {
             elements.formatButton.disabled = false;
             elements.formatButton.removeAttribute("aria-busy");
           }
         }
-
         async function copyOutput() {
           if (!elements.output.value) {
             return;
           }
-
           try {
             if (navigator.clipboard && window.isSecureContext) {
               await navigator.clipboard.writeText(elements.output.value);
@@ -2935,12 +2253,10 @@
             setStatus("コピーできませんでした。出力欄から手動でコピーしてください。", "error", true);
           }
         }
-
         function downloadOutput() {
           if (!elements.output.value) {
             return;
           }
-
           const blob = new Blob([elements.output.value], {
             type: "text/html;charset=utf-8",
           });
@@ -2954,7 +2270,6 @@
           URL.revokeObjectURL(url);
           setStatus(`${sourceFileName} を保存しました。`, "success", true);
         }
-
         function deriveOutputFileName(fileName) {
           const cleanName = fileName.trim() || "document.html";
           if (/\.html?$/i.test(cleanName)) {
@@ -2962,12 +2277,10 @@
           }
           return `${cleanName}.formatted.html`;
         }
-
         async function loadFile(file) {
           if (!file) {
             return;
           }
-
           try {
             const text = await file.text();
             elements.input.value = text;
@@ -2977,7 +2290,9 @@
             sourceFileName = deriveOutputFileName(file.name);
             updateStats();
             setStatus(`${file.name} を読み込みました。`, "success", true);
-            elements.input.focus({ preventScroll: true });
+            elements.input.focus({
+              preventScroll: true
+            });
           } catch (error) {
             console.error(error);
             setStatus("ファイルを読み込めませんでした。", "error", true);
@@ -2985,27 +2300,19 @@
             elements.fileInput.value = "";
           }
         }
-
         function loadSample() {
           const closingScript = "<" + "/script>";
-          elements.input.value = [
-            "<!doctype html>",
-            '<html lang="ja"><head><meta charset="UTF-8"><title>Sample</title>',
-            "<style>body{margin:0;font-family:sans-serif;background:#f5f7fb}.card:hover{transform:translateY(-2px)}@media (max-width:600px){.card{margin:12px}}</style>",
-            '</head><body><main><article class="card"><h1>Hello <span>world</span></h1><button id="button">Click</button></article></main>',
-            '<script>const state={count:0,message:`count: ${0}`};document.querySelector("#button").addEventListener("click",()=>{state.count+=1;console.log(/click/i.test("click"),state)});' +
-              closingScript,
-            "</body></html>",
-          ].join("");
+          elements.input.value = ["<!doctype html>", '<html lang="ja"><head><meta charset="UTF-8"><title>Sample</title>', "<style>body{margin:0;font-family:sans-serif;background:#f5f7fb}.card:hover{transform:translateY(-2px)}@media (max-width:600px){.card{margin:12px}}</style>", '</head><body><main><article class="card"><h1>Hello <span>world</span></h1><button id="button">Click</button></article></main>', '<script>const state={count:0,message:`count: ${0}`};document.querySelector("#button").addEventListener("click",()=>{state.count+=1;console.log(/click/i.test("click"),state)});' + closingScript, "</body></html>",].join("");
           elements.output.value = "";
           resetEditorScroll(elements.input);
           resetEditorScroll(elements.output);
           sourceFileName = "sample.formatted.html";
           updateStats();
           setStatus("サンプルHTMLを入力しました。", "neutral", true);
-          elements.input.focus({ preventScroll: true });
+          elements.input.focus({
+            preventScroll: true
+          });
         }
-
         function clearEditors() {
           elements.input.value = "";
           elements.output.value = "";
@@ -3014,79 +2321,65 @@
           setStatus("入力と整形結果を消去しました。", "neutral", true);
           elements.input.focus();
         }
-
         function insertIndent(event) {
           if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey) {
             return;
           }
-
           event.preventDefault();
           const textarea = event.currentTarget;
           const start = textarea.selectionStart;
           const end = textarea.selectionEnd;
           const indent = getIndentUnit();
           textarea.setRangeText(indent, start, end, "end");
-          textarea.dispatchEvent(new Event("input", { bubbles: true }));
+          textarea.dispatchEvent(new Event("input", {
+            bubbles: true
+          }));
         }
-
         function setDropActive(active) {
           elements.sourcePanel.classList.toggle("is-drop-target", active);
         }
-
         elements.formatButton.addEventListener("click", formatDocument);
         elements.copyButton.addEventListener("click", copyOutput);
         elements.downloadButton.addEventListener("click", downloadOutput);
-        elements.openButton.addEventListener("click", () => elements.fileInput.click());
-        elements.fileInput.addEventListener("change", () => loadFile(elements.fileInput.files?.[0]));
+        elements.openButton.addEventListener("click",() => elements.fileInput.click());
+        elements.fileInput.addEventListener("change",() => loadFile(elements.fileInput.files?.[0]));
         elements.sampleButton.addEventListener("click", loadSample);
         elements.clearButton.addEventListener("click", clearEditors);
         elements.input.addEventListener("input", updateStats);
         elements.input.addEventListener("keydown", insertIndent);
         elements.output.addEventListener("keydown", insertIndent);
-
-        elements.indentSelect.addEventListener("change", () => {
+        elements.indentSelect.addEventListener("change",() => {
           try {
             localStorage.setItem("html-formatter-indent", elements.indentSelect.value);
-          } catch {
-            // Storage can be unavailable in private or restricted contexts.
-          }
+          } catch {}
         });
-
-        for (const eventName of ["dragenter", "dragover"]) {
-          elements.sourcePanel.addEventListener(eventName, (event) => {
+        for (const eventName of["dragenter", "dragover"]) {
+          elements.sourcePanel.addEventListener(eventName,(event) => {
             event.preventDefault();
             setDropActive(true);
           });
         }
-
-        for (const eventName of ["dragleave", "drop"]) {
-          elements.sourcePanel.addEventListener(eventName, (event) => {
+        for (const eventName of["dragleave", "drop"]) {
+          elements.sourcePanel.addEventListener(eventName,(event) => {
             event.preventDefault();
             setDropActive(false);
           });
         }
-
-        elements.sourcePanel.addEventListener("drop", (event) => {
+        elements.sourcePanel.addEventListener("drop",(event) => {
           loadFile(event.dataTransfer?.files?.[0]);
         });
-
-        document.addEventListener("keydown", (event) => {
+        document.addEventListener("keydown",(event) => {
           if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
             event.preventDefault();
             formatDocument();
           }
         });
-
         try {
           const savedIndent = localStorage.getItem("html-formatter-indent");
           if (["2", "4", "tab"].includes(savedIndent ?? "")) {
             elements.indentSelect.value = savedIndent;
           }
-        } catch {
-          // The default is already selected.
-        }
-
-        updateStats();
+        } catch {}updateStats();
         elements.input.focus();
       })();
     </script>
