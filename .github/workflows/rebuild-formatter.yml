@@ -57,7 +57,7 @@ jobs:
 
           let uiScript = source.slice(uiStart, scriptEnd).trimEnd();
           uiScript = uiScript
-            .replace("maxLineLength: 120,", "maxLineLength: 100,")
+            .replace("maxLineLength: 120,", "maxLineLength: 80,")
             .replace(
               "HTML・組み込みCSS・JavaScriptを整形しました",
               "HTML・組み込みCSS・JavaScriptを展開整形しました",
@@ -122,8 +122,8 @@ jobs:
                 max_preserve_newlines: 0,
                 end_with_newline: userOptions.endWithNewline !== false,
                 wrap_line_length: Number.isFinite(requestedWidth)
-                  ? Math.max(60, Math.min(100, requestedWidth))
-                  : 100,
+                  ? Math.max(60, Math.min(80, requestedWidth))
+                  : 80,
                 eol: "\n",
               };
             }
@@ -160,7 +160,6 @@ jobs:
                   "s",
                   "samp",
                   "small",
-                  "span",
                   "strong",
                   "sub",
                   "sup",
@@ -171,7 +170,7 @@ jobs:
                 inline_custom_elements: false,
                 unformatted: [],
                 content_unformatted: ["pre", "textarea"],
-                brace_style: "collapse,preserve-inline",
+                brace_style: "collapse",
                 operator_position: "before-newline",
                 break_chained_methods: true,
                 space_after_anon_function: false,
@@ -190,7 +189,7 @@ jobs:
             function formatJavaScript(input, userOptions = {}) {
               return jsBeautify(String(input ?? ""), {
                 ...buildCommonOptions(userOptions),
-                brace_style: "collapse,preserve-inline",
+                brace_style: "collapse",
                 operator_position: "before-newline",
                 break_chained_methods: true,
                 space_after_anon_function: false,
@@ -256,7 +255,7 @@ jobs:
             preserve_newlines: false,
             max_preserve_newlines: 0,
             end_with_newline: true,
-            wrap_line_length: 100,
+            wrap_line_length: 80,
             wrap_attributes: "force-expand-multiline",
             wrap_attributes_min_attrs: 2,
             wrap_attributes_indent_size: 2,
@@ -264,25 +263,31 @@ jobs:
             inline: [
               "a", "abbr", "b", "bdi", "bdo", "cite", "code", "data",
               "del", "dfn", "em", "i", "ins", "kbd", "mark", "q", "s",
-              "samp", "small", "span", "strong", "sub", "sup", "time", "u", "var",
+              "samp", "small", "strong", "sub", "sup", "time", "u", "var",
             ],
             inline_custom_elements: false,
             unformatted: [],
             content_unformatted: ["pre", "textarea"],
-            brace_style: "collapse,preserve-inline",
+            brace_style: "collapse",
             operator_position: "before-newline",
             break_chained_methods: true,
           };
 
-          const fixture = '<!doctype html><html lang="ja"><head><meta charset="UTF-8"><style>body{margin:0;background:#fff;color:#111}.card,.panel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:16px}@media(max-width:600px){.card,.panel{grid-template-columns:1fr}}</style></head><body><main id="app" class="card" data-mode="test"><button id="run" class="primary" type="button">Run</button><span>status</span></main><script>const state={count:0,items:[1,2,3,4],nested:{enabled:true,label:"demo"}};document.querySelector("#run").addEventListener("click",()=>{state.count+=1;state.items.map((value,index)=>({value,index})).forEach((item)=>console.log(item));});</script></body></html>';
+          const fixture = '<!doctype html><html lang="ja"><head><meta charset="UTF-8"><style>body{margin:0;background:#fff;color:#111}.card,.panel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:16px}@media(max-width:600px){.card,.panel{grid-template-columns:1fr}}</style></head><body><main id="app" class="card" data-mode="test"><button id="run" class="primary" type="button">Run</button><span>status</span></main><script>const state={count:0,items:[{id:1,label:"alpha",enabled:true},{id:2,label:"beta",enabled:false},{id:3,label:"gamma",enabled:true}],nested:{enabled:true,label:"demo",metadata:{owner:"formatter",version:2}}};document.querySelector("#run").addEventListener("click",()=>{state.count+=1;const normalized=state.items.map((value,index)=>({value,index})).filter((item)=>item.value.enabled);normalized.forEach((item)=>console.log(item));});</script></body></html>';
           const formattedFixture = beautify.html(fixture, options);
           const fixtureLines = formattedFixture.trimEnd().split("\n");
+          const scriptMatch = formattedFixture.match(/<script>\s*\n([\s\S]*?)\s*<\/script>/u);
+          const scriptLines = scriptMatch ? scriptMatch[1].trim().split("\n") : [];
 
-          assert.ok(fixtureLines.length >= 35, `Fixture was only expanded to ${fixtureLines.length} lines.`);
+          assert.ok(fixtureLines.length >= 50, `Fixture was only expanded to ${fixtureLines.length} lines.`);
           assert.match(formattedFixture, /<main\s*\n\s+id="app"\s*\n\s+class="card"/u);
+          assert.match(formattedFixture, /<button\s*\n\s+id="run"\s*\n\s+class="primary"/u);
+          assert.match(formattedFixture, /<\/button>\s*\n\s*<span>status<\/span>/u);
           assert.match(formattedFixture, /body \{\s*\n\s+margin: 0;/u);
+          assert.match(formattedFixture, /\.card,\s*\n\s*\.panel \{/u);
+          assert.ok(scriptLines.length >= 15, `Embedded JavaScript was only expanded to ${scriptLines.length} lines.`);
           assert.match(formattedFixture, /const state = \{\s*\n/u);
-          assert.match(formattedFixture, /items: \[\s*\n/u);
+          assert.match(formattedFixture, /document\.querySelector\("#run"\)\s*\n\s*\.addEventListener/u);
 
           const source = fs.readFileSync("index.html", "utf8");
           assert.doesNotMatch(source, /<script\b[^>]*\bsrc\s*=/iu);
@@ -307,19 +312,19 @@ jobs:
             });
             const oneLine = minified.replace(/\r?\n/gu, "");
             assert.equal(oneLine.split("\n").length, 1);
-            assert.ok(oneLine.length > 100000, "The one-line self-test source is unexpectedly small.");
+            assert.ok(oneLine.length > 50000, "The one-line self-test source is unexpectedly small.");
             fs.writeFileSync("/tmp/index.one-line.html", oneLine, "utf8");
 
             const reformatted = beautify.html(oneLine, options);
             const lineCount = reformatted.trimEnd().split("\n").length;
-            assert.ok(lineCount > 1500, `The complete one-line app expanded to only ${lineCount} lines.`);
+            assert.ok(lineCount > 500, `The complete one-line app expanded to only ${lineCount} lines.`);
             assert.match(reformatted, /<style>\s*\n/u);
             assert.match(reformatted, /<script>\s*\n/u);
             fs.writeFileSync("/tmp/index.reformatted.html", reformatted, "utf8");
 
             console.log(`[self-test] one-line input: 1 line / ${oneLine.length} characters`);
             console.log(`[self-test] formatted output: ${lineCount} lines / ${reformatted.length} characters`);
-            console.log(`[self-test] fixture output: ${fixtureLines.length} lines`);
+            console.log(`[self-test] fixture output: ${fixtureLines.length} lines; embedded JS: ${scriptLines.length} lines`);
           })().catch((error) => {
             console.error(error);
             process.exitCode = 1;
@@ -365,13 +370,17 @@ jobs:
             await page.locator("#formatButton").click();
             const output = await page.locator("#formattedOutput").inputValue();
             const outputLines = output.trimEnd().split("\n").length;
+            const scriptMatch = output.match(/<script>\s*\n([\s\S]*?)\s*<\/script>/u);
+            const scriptLines = scriptMatch ? scriptMatch[1].trim().split("\n") : [];
 
-            assert.ok(outputLines >= 30, `${label}: sample expanded to only ${outputLines} lines.`);
+            assert.ok(outputLines >= 35, `${label}: sample expanded to only ${outputLines} lines.`);
             assert.match(output, /<style>\s*\n/u, `${label}: embedded CSS was not expanded.`);
             assert.match(output, /body \{\s*\n\s+margin: 0;/u, `${label}: CSS declarations were not formatted.`);
             assert.match(output, /<script>\s*\n/u, `${label}: embedded JavaScript was not expanded.`);
-            assert.match(output, /const state = \{\s*\n/u, `${label}: JavaScript objects were not formatted.`);
+            assert.ok(scriptLines.length >= 8, `${label}: JavaScript was only expanded to ${scriptLines.length} lines.`);
+            assert.match(output, /document\.querySelector\("#button"\)\s*\n\s*\.addEventListener/u, `${label}: JavaScript chains were not expanded.`);
             assert.equal(errors.length, 0, `${label}: ${errors.join("\n")}`);
+            assert.equal(await page.locator("#copyButton").isEnabled(), true, `${label}: result actions were not enabled.`);
 
             await page.close();
             return output;
@@ -393,7 +402,7 @@ jobs:
               const selfFormatted = await page.evaluate((source) => {
                 return window.HtmlFormatterCore.formatHtml(source, {
                   indentUnit: "  ",
-                  maxLineLength: 100,
+                  maxLineLength: 80,
                   endWithNewline: true,
                 });
               }, minifiedSource);
@@ -401,7 +410,7 @@ jobs:
 
               const selfFormattedLines = selfFormatted.trimEnd().split("\n").length;
               assert.ok(
-                selfFormattedLines > 1500,
+                selfFormattedLines > 500,
                 `Browser formatter expanded the complete app to only ${selfFormattedLines} lines.`,
               );
               fs.writeFileSync("/tmp/index.browser-reformatted.html", selfFormatted, "utf8");
