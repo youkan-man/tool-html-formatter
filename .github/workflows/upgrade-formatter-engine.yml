@@ -1,0 +1,1550 @@
+name: Upgrade formatter engine
+
+on:
+  push:
+    paths:
+      - .github/workflows/upgrade-formatter-engine.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install formatter and test dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save \
+            prettier@3.9.6 \
+            js-beautify@2.0.3 \
+            html-minifier-terser@7.2.0 \
+            playwright@1.55.0
+
+      - name: Rebuild the single-file application
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require("node:fs");
+          const path = require("node:path");
+
+          const htmlPath = "index.html";
+          const source = fs.readFileSync(htmlPath, "utf8");
+          const engineMarker = "    <script>\n/*!\n * Embedded js-beautify 2.0.3";
+          const engineStart = source.indexOf(engineMarker);
+          const uiMarker = [
+            "      (() => {",
+            "        \"use strict\";",
+            "        if (!window.HtmlFormatterCore) {",
+          ].join("\n");
+          const uiStart = source.indexOf(uiMarker, engineStart);
+          const uiScriptEnd = source.indexOf("    </script>", uiStart);
+
+          if (engineStart < 0 || uiStart < 0 || uiScriptEnd < 0) {
+            throw new Error("Could not locate the current formatter engine and UI script.");
+          }
+
+          function replaceOnce(value, search, replacement, label) {
+            const index = value.indexOf(search);
+            if (index < 0) {
+              throw new Error(`Could not replace ${label}.`);
+            }
+            if (value.indexOf(search, index + search.length) >= 0) {
+              throw new Error(`Replacement target for ${label} is not unique.`);
+            }
+            return value.slice(0, index) + replacement + value.slice(index + search.length);
+          }
+
+          let prefix = source.slice(0, engineStart);
+          const suffix = source.slice(uiScriptEnd + "    </script>".length);
+
+          prefix = replaceOnce(
+            prefix,
+            "HTMLと組み込みCSS・JavaScriptをブラウザ内だけで整形する単一ファイルのフォーマッター",
+            "HTML・Vue・Angularと組み込みCSS・JavaScript・TypeScript・JSONをブラウザ内だけで解析整形する単一ファイルのフォーマッター",
+            "meta description",
+          );
+          prefix = replaceOnce(
+            prefix,
+            "HTMLと組み込みCSS・JavaScriptを、単一画面で読みやすく整形します。",
+            "構文解析ベースでHTMLと組み込みCSS・JavaScript・JSONを強力に整形します。",
+            "brand description",
+          );
+          prefix = replaceOnce(
+            prefix,
+            '<span class="local-badge">ブラウザ内だけで処理</span>',
+            '<span class="local-badge">Prettier + 寛容フォールバック</span>',
+            "engine badge",
+          );
+          prefix = replaceOnce(
+            prefix,
+            '<input id="fileInput" class="visually-hidden" type="file" accept=".html,.htm,text/html">',
+            '<input id="fileInput" class="visually-hidden" type="file" accept=".html,.htm,.xhtml,.vue,text/html,application/xhtml+xml">',
+            "accepted file types",
+          );
+
+          const oldSettings = `          <div class="toolbar-group">
+            <label class="setting-label" for="indentSelect">
+              インデント
+              <select id="indentSelect">
+                <option value="2" selected>スペース 2</option>
+                <option value="4">スペース 4</option>
+                <option value="tab">タブ</option>
+              </select>
+            </label>
+            <button id="formatButton" class="primary" type="button">整形</button>
+          </div>`;
+          const newSettings = `          <div class="toolbar-group formatter-settings">
+            <label class="setting-label" for="parserSelect">
+              構文
+              <select id="parserSelect">
+                <option value="auto" selected>自動</option>
+                <option value="html">HTML</option>
+                <option value="vue">Vue</option>
+                <option value="angular">Angular</option>
+              </select>
+            </label>
+            <label class="setting-label" for="indentSelect">
+              インデント
+              <select id="indentSelect">
+                <option value="2" selected>スペース 2</option>
+                <option value="4">スペース 4</option>
+                <option value="tab">タブ</option>
+              </select>
+            </label>
+            <label class="setting-label" for="widthSelect">
+              折返し
+              <select id="widthSelect">
+                <option value="60">60</option>
+                <option value="80" selected>80</option>
+                <option value="100">100</option>
+                <option value="120">120</option>
+              </select>
+            </label>
+            <label class="setting-label" for="layoutSelect">
+              展開
+              <select id="layoutSelect">
+                <option value="safe" selected>意味を保持</option>
+                <option value="maximum">最大</option>
+              </select>
+            </label>
+            <button id="formatButton" class="primary" type="button">強力整形</button>
+          </div>`;
+          prefix = replaceOnce(prefix, oldSettings, newSettings, "formatter controls");
+
+          const extraCss = `
+      .formatter-settings {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      .formatter-settings select {
+        min-width: 78px;
+      }
+      #parserSelect {
+        min-width: 92px;
+      }
+      #layoutSelect {
+        min-width: 108px;
+      }
+      button[aria-busy="true"] {
+        cursor: progress;
+      }
+      @media (max-width: 900px) {
+        .toolbar {
+          align-items: stretch;
+          flex-direction: column;
+        }
+        .formatter-settings {
+          justify-content: flex-start;
+        }
+      }
+      @media (max-width: 620px) {
+        .formatter-settings {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .formatter-settings .setting-label,
+        .formatter-settings select {
+          width: 100%;
+        }
+        .formatter-settings button.primary {
+          grid-column: 1 / -1;
+          width: 100%;
+        }
+      }
+`;
+          prefix = replaceOnce(prefix, "    </style>\n  </head>", `${extraCss}    </style>\n  </head>`, "additional styles");
+
+          const packageFiles = [
+            "prettier/standalone.js",
+            "prettier/plugins/babel.js",
+            "prettier/plugins/estree.js",
+            "prettier/plugins/html.js",
+            "prettier/plugins/postcss.js",
+            "prettier/plugins/typescript.js",
+            "prettier/plugins/angular.js",
+            "js-beautify/js/lib/beautifier.min.js",
+          ];
+
+          const engineSources = packageFiles.map((relativePath) => {
+            const absolutePath = path.join("node_modules", relativePath);
+            if (!fs.existsSync(absolutePath)) {
+              throw new Error(`Missing browser engine file: ${absolutePath}`);
+            }
+            return fs
+              .readFileSync(absolutePath, "utf8")
+              .replace(/^#!.*\r?\n/u, "")
+              .replace(/^\/\/# sourceMappingURL=.*$/gmu, "")
+              .trim();
+          });
+          const engineSource = engineSources.join(";\n");
+          const encodedEngine = Buffer.from(engineSource, "utf8").toString("base64");
+          const engineChunks = encodedEngine.match(/.{1,4096}/gu) ?? [];
+
+          const prettierLicense = fs.readFileSync("node_modules/prettier/LICENSE", "utf8").trim();
+          const beautifierLicense = fs.readFileSync("node_modules/js-beautify/LICENSE", "utf8").trim();
+          const licenseComment = [
+            "    <!--!",
+            "      Embedded dependency: Prettier 3.9.6",
+            ...prettierLicense.split(/\r?\n/u).map((line) => `      ${line}`),
+            "",
+            "      Embedded dependency: js-beautify 2.0.3 (fallback engine)",
+            ...beautifierLicense.split(/\r?\n/u).map((line) => `      ${line}`),
+            "    -->",
+          ].join("\n");
+
+          const payloadScript = [
+            '    <script id="formatterEnginePayload" type="application/json">',
+            JSON.stringify(engineChunks, null, 2),
+            "    </script>",
+          ].join("\n");
+
+          const runtimeFactory = String.raw`function createFormatterRuntime(globalScope) {
+  "use strict";
+
+  const prettierEngine = globalScope.prettier;
+  const pluginContainer = globalScope.prettierPlugins ?? {};
+  const prettierPluginList = Array.isArray(pluginContainer)
+    ? pluginContainer.filter(Boolean)
+    : Object.values(pluginContainer).filter(Boolean);
+  const fallbackEngine = globalScope.beautifier ?? {};
+  const fallbackHtml = fallbackEngine.html ?? fallbackEngine.html_beautify;
+  const fallbackCss = fallbackEngine.css ?? fallbackEngine.css_beautify;
+  const fallbackJavaScript = fallbackEngine.js ?? fallbackEngine.js_beautify;
+
+  if (!prettierEngine || typeof prettierEngine.format !== "function") {
+    throw new Error("Prettier engine was not loaded.");
+  }
+  if (prettierPluginList.length < 5) {
+    throw new Error("Prettier plugins were not loaded completely.");
+  }
+  if (
+    typeof fallbackHtml !== "function" ||
+    typeof fallbackCss !== "function" ||
+    typeof fallbackJavaScript !== "function"
+  ) {
+    throw new Error("Fallback formatter engine was not loaded.");
+  }
+
+  function now() {
+    return globalScope.performance?.now?.() ?? Date.now();
+  }
+
+  function countLines(value) {
+    return value ? value.split("\n").length : 0;
+  }
+
+  function countOpeningTags(value, tagName) {
+    return (value.match(new RegExp(`<${tagName}\\b`, "giu")) ?? []).length;
+  }
+
+  function normalizeUserOptions(userOptions = {}) {
+    const indentUnit = userOptions.indentUnit ?? "  ";
+    const useTabs = indentUnit === "\t";
+    const requestedWidth = Number(userOptions.maxLineLength);
+    const printWidth = Number.isFinite(requestedWidth)
+      ? Math.max(40, Math.min(240, Math.trunc(requestedWidth)))
+      : 80;
+    const parserMode = ["auto", "html", "vue", "angular", "lwc"].includes(
+      userOptions.parserMode,
+    )
+      ? userOptions.parserMode
+      : "auto";
+    const layoutMode = userOptions.layoutMode === "maximum" ? "maximum" : "safe";
+
+    return {
+      useTabs,
+      tabWidth: useTabs ? 2 : Math.max(1, indentUnit.length),
+      printWidth,
+      parserMode,
+      layoutMode,
+      endWithNewline: userOptions.endWithNewline !== false,
+      fallback: userOptions.fallback !== false,
+    };
+  }
+
+  function detectHtmlParser(source, parserMode) {
+    if (parserMode !== "auto") {
+      return parserMode;
+    }
+    const beginning = source.slice(0, 12000);
+    if (
+      /<template(?:\s|>)/iu.test(beginning) &&
+      /<script(?:\s|>)/iu.test(source) &&
+      /<style(?:\s|>)/iu.test(source)
+    ) {
+      return "vue";
+    }
+    if (
+      /\*ng(?:If|For|Switch)|\[\([\w.-]+\)\]|\([\w.-]+\)\s*=|\[[\w.-]+\]\s*=/u.test(
+        beginning,
+      )
+    ) {
+      return "angular";
+    }
+    return "html";
+  }
+
+  function commonPrettierOptions(options) {
+    return {
+      plugins: prettierPluginList,
+      printWidth: options.printWidth,
+      tabWidth: options.tabWidth,
+      useTabs: options.useTabs,
+      endOfLine: "lf",
+      embeddedLanguageFormatting: "auto",
+      singleAttributePerLine: true,
+      bracketSameLine: false,
+      proseWrap: "preserve",
+      semi: true,
+      trailingComma: "all",
+      arrowParens: "always",
+    };
+  }
+
+  function commonFallbackOptions(options) {
+    return {
+      indent_char: options.useTabs ? "\t" : " ",
+      indent_size: options.useTabs ? 1 : options.tabWidth,
+      indent_with_tabs: options.useTabs,
+      preserve_newlines: false,
+      max_preserve_newlines: 0,
+      end_with_newline: options.endWithNewline,
+      wrap_line_length: options.printWidth,
+      eol: "\n",
+    };
+  }
+
+  function normalizeOutput(output, endWithNewline) {
+    const normalized = String(output ?? "").replace(/\r\n?/gu, "\n").replace(/[ \t]+$/gmu, "");
+    if (!normalized) {
+      return "";
+    }
+    const withoutTrailingLines = normalized.replace(/\n+$/u, "");
+    return endWithNewline ? `${withoutTrailingLines}\n` : withoutTrailingLines;
+  }
+
+  function serializeError(error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const location = error?.loc?.start ?? error?.loc ?? null;
+    return {
+      name: error?.name ?? "Error",
+      message,
+      line: Number.isFinite(location?.line) ? location.line : null,
+      column: Number.isFinite(location?.column) ? location.column : null,
+    };
+  }
+
+  function errorSummary(error) {
+    const serialized = serializeError(error);
+    const location = serialized.line
+      ? ` (${serialized.line}:${serialized.column ?? 1})`
+      : "";
+    return `${serialized.message}${location}`;
+  }
+
+  function makeReport({
+    source,
+    output,
+    engine,
+    parser,
+    fallback,
+    warning,
+    startedAt,
+  }) {
+    return {
+      engine,
+      parser,
+      fallback,
+      warning: warning ?? null,
+      inputLines: countLines(source),
+      outputLines: countLines(output),
+      inputCharacters: source.length,
+      outputCharacters: output.length,
+      styleBlocks: countOpeningTags(source, "style"),
+      scriptBlocks: countOpeningTags(source, "script"),
+      elapsedMilliseconds: Math.max(0, now() - startedAt),
+    };
+  }
+
+  async function formatHtml(input, userOptions = {}) {
+    const source = String(input ?? "");
+    const options = normalizeUserOptions(userOptions);
+    const parser = detectHtmlParser(source, options.parserMode);
+    const startedAt = now();
+
+    if (!source.trim()) {
+      return {
+        output: "",
+        report: makeReport({
+          source,
+          output: "",
+          engine: "prettier",
+          parser,
+          fallback: false,
+          startedAt,
+        }),
+      };
+    }
+
+    try {
+      const output = normalizeOutput(
+        await prettierEngine.format(source, {
+          ...commonPrettierOptions(options),
+          parser,
+          htmlWhitespaceSensitivity: options.layoutMode === "maximum" ? "ignore" : "css",
+          vueIndentScriptAndStyle: true,
+        }),
+        options.endWithNewline,
+      );
+      return {
+        output,
+        report: makeReport({
+          source,
+          output,
+          engine: "prettier",
+          parser,
+          fallback: false,
+          startedAt,
+        }),
+      };
+    } catch (strictError) {
+      if (!options.fallback) {
+        throw strictError;
+      }
+      try {
+        const fallbackOptions = commonFallbackOptions(options);
+        const output = normalizeOutput(
+          fallbackHtml(source, {
+            ...fallbackOptions,
+            indent_inner_html: true,
+            indent_head_inner_html: true,
+            indent_body_inner_html: true,
+            indent_scripts: "normal",
+            extra_liners: [],
+            wrap_attributes: "force-expand-multiline",
+            wrap_attributes_min_attrs: 2,
+            wrap_attributes_indent_size: options.tabWidth,
+            inline_custom_elements: false,
+            unformatted: [],
+            content_unformatted: ["pre", "textarea"],
+            brace_style: "collapse",
+            operator_position: "before-newline",
+            break_chained_methods: true,
+            templating: ["auto"],
+          }),
+          options.endWithNewline,
+        );
+        return {
+          output,
+          report: makeReport({
+            source,
+            output,
+            engine: "js-beautify",
+            parser: "tolerant-html",
+            fallback: true,
+            warning: errorSummary(strictError),
+            startedAt,
+          }),
+        };
+      } catch (fallbackError) {
+        throw new Error(
+          `厳格解析: ${errorSummary(strictError)} / 寛容整形: ${errorSummary(fallbackError)}`,
+        );
+      }
+    }
+  }
+
+  async function formatCss(input, userOptions = {}) {
+    const source = String(input ?? "");
+    const options = normalizeUserOptions(userOptions);
+    const startedAt = now();
+    try {
+      const output = normalizeOutput(
+        await prettierEngine.format(source, {
+          ...commonPrettierOptions(options),
+          parser: "css",
+        }),
+        options.endWithNewline,
+      );
+      return {
+        output,
+        report: makeReport({
+          source,
+          output,
+          engine: "prettier",
+          parser: "css",
+          fallback: false,
+          startedAt,
+        }),
+      };
+    } catch (strictError) {
+      if (!options.fallback) {
+        throw strictError;
+      }
+      const output = normalizeOutput(
+        fallbackCss(source, {
+          ...commonFallbackOptions(options),
+          newline_between_rules: true,
+          selector_separator_newline: true,
+          space_around_combinator: true,
+        }),
+        options.endWithNewline,
+      );
+      return {
+        output,
+        report: makeReport({
+          source,
+          output,
+          engine: "js-beautify",
+          parser: "tolerant-css",
+          fallback: true,
+          warning: errorSummary(strictError),
+          startedAt,
+        }),
+      };
+    }
+  }
+
+  async function formatJavaScript(input, userOptions = {}) {
+    const source = String(input ?? "");
+    const options = normalizeUserOptions(userOptions);
+    const parser = userOptions.parser === "typescript" ? "typescript" : "babel";
+    const startedAt = now();
+    try {
+      const output = normalizeOutput(
+        await prettierEngine.format(source, {
+          ...commonPrettierOptions(options),
+          parser,
+        }),
+        options.endWithNewline,
+      );
+      return {
+        output,
+        report: makeReport({
+          source,
+          output,
+          engine: "prettier",
+          parser,
+          fallback: false,
+          startedAt,
+        }),
+      };
+    } catch (strictError) {
+      if (!options.fallback) {
+        throw strictError;
+      }
+      const output = normalizeOutput(
+        fallbackJavaScript(source, {
+          ...commonFallbackOptions(options),
+          brace_style: "collapse",
+          operator_position: "before-newline",
+          break_chained_methods: true,
+          space_after_anon_function: false,
+          keep_array_indentation: false,
+          keep_function_indentation: false,
+        }),
+        options.endWithNewline,
+      );
+      return {
+        output,
+        report: makeReport({
+          source,
+          output,
+          engine: "js-beautify",
+          parser: parser === "typescript" ? "tolerant-typescript" : "tolerant-javascript",
+          fallback: true,
+          warning: errorSummary(strictError),
+          startedAt,
+        }),
+      };
+    }
+  }
+
+  async function formatJson(input, userOptions = {}) {
+    const source = String(input ?? "");
+    const options = normalizeUserOptions(userOptions);
+    const startedAt = now();
+    try {
+      const output = normalizeOutput(
+        await prettierEngine.format(source, {
+          ...commonPrettierOptions(options),
+          parser: "json",
+        }),
+        options.endWithNewline,
+      );
+      return {
+        output,
+        report: makeReport({
+          source,
+          output,
+          engine: "prettier",
+          parser: "json",
+          fallback: false,
+          startedAt,
+        }),
+      };
+    } catch (strictError) {
+      if (!options.fallback) {
+        throw strictError;
+      }
+      try {
+        const parsed = JSON.parse(source);
+        const indentation = options.useTabs ? "\t" : " ".repeat(options.tabWidth);
+        const output = normalizeOutput(
+          JSON.stringify(parsed, null, indentation),
+          options.endWithNewline,
+        );
+        return {
+          output,
+          report: makeReport({
+            source,
+            output,
+            engine: "json-native",
+            parser: "json",
+            fallback: true,
+            warning: errorSummary(strictError),
+            startedAt,
+          }),
+        };
+      } catch (fallbackError) {
+        throw new Error(
+          `JSON解析: ${errorSummary(strictError)} / 標準JSON解析: ${errorSummary(fallbackError)}`,
+        );
+      }
+    }
+  }
+
+  async function execute(kind, input, options) {
+    switch (kind) {
+      case "html":
+        return formatHtml(input, options);
+      case "css":
+        return formatCss(input, options);
+      case "javascript":
+        return formatJavaScript(input, options);
+      case "typescript":
+        return formatJavaScript(input, { ...options, parser: "typescript" });
+      case "json":
+        return formatJson(input, options);
+      default:
+        throw new Error(`Unknown formatter kind: ${kind}`);
+    }
+  }
+
+  return {
+    execute,
+    capabilities: {
+      engines: ["prettier", "js-beautify"],
+      parsers: ["html", "vue", "angular", "lwc", "css", "babel", "typescript", "json"],
+    },
+  };
+}`;
+
+          const bootstrapScript = String.raw`    <script>
+      (() => {
+        "use strict";
+
+        const payloadElement = document.querySelector("#formatterEnginePayload");
+        if (!payloadElement) {
+          throw new Error("Formatter engine payload was not found.");
+        }
+
+        const encodedChunks = JSON.parse(payloadElement.textContent || "[]");
+        const binary = atob(encodedChunks.join(""));
+        const bytes = new Uint8Array(binary.length);
+        for (let index = 0; index < binary.length; index += 1) {
+          bytes[index] = binary.charCodeAt(index);
+        }
+        const engineSource = new TextDecoder().decode(bytes);
+        payloadElement.remove();
+
+        const createFormatterRuntime = ${runtimeFactory};
+        const workerRuntimeSource = [
+          "self.__createFormatterRuntime = ",
+          createFormatterRuntime.toString(),
+          ";\nconst __runtime = self.__createFormatterRuntime(self);",
+          "\nself.postMessage({ type: 'ready', capabilities: __runtime.capabilities });",
+          "\nself.onmessage = async (event) => {",
+          "\n  const { id, kind, input, options } = event.data || {};",
+          "\n  try {",
+          "\n    const result = await __runtime.execute(kind, input, options);",
+          "\n    self.postMessage({ type: 'result', id, ok: true, output: result.output, report: result.report });",
+          "\n  } catch (error) {",
+          "\n    self.postMessage({ type: 'result', id, ok: false, error: { name: error?.name || 'Error', message: error?.message || String(error), stack: error?.stack || '' } });",
+          "\n  }",
+          "\n};",
+        ].join("");
+
+        let worker = null;
+        let workerObjectUrl = "";
+        let workerReady = false;
+        let workerFailed = false;
+        let workerCapabilities = null;
+        let localRuntime = null;
+        let requestSequence = 0;
+        let lastReport = null;
+        const pendingRequests = new Map();
+        let resolveWorkerReady;
+        let rejectWorkerReady;
+        const workerReadyPromise = new Promise((resolve, reject) => {
+          resolveWorkerReady = resolve;
+          rejectWorkerReady = reject;
+        });
+
+        function rejectPending(error) {
+          for (const pending of pendingRequests.values()) {
+            pending.reject(error);
+          }
+          pendingRequests.clear();
+        }
+
+        function disableWorker(error) {
+          if (workerFailed) {
+            return;
+          }
+          workerFailed = true;
+          workerReady = false;
+          rejectWorkerReady?.(error);
+          rejectPending(error);
+          worker?.terminate();
+          worker = null;
+          if (workerObjectUrl) {
+            URL.revokeObjectURL(workerObjectUrl);
+            workerObjectUrl = "";
+          }
+        }
+
+        try {
+          const blob = new Blob([engineSource, "\n", workerRuntimeSource], {
+            type: "text/javascript;charset=utf-8",
+          });
+          workerObjectUrl = URL.createObjectURL(blob);
+          worker = new Worker(workerObjectUrl);
+          worker.addEventListener("message", (event) => {
+            const message = event.data || {};
+            if (message.type === "ready") {
+              workerReady = true;
+              workerCapabilities = message.capabilities ?? null;
+              resolveWorkerReady?.(message.capabilities);
+              if (workerObjectUrl) {
+                URL.revokeObjectURL(workerObjectUrl);
+                workerObjectUrl = "";
+              }
+              return;
+            }
+            if (message.type !== "result") {
+              return;
+            }
+            const pending = pendingRequests.get(message.id);
+            if (!pending) {
+              return;
+            }
+            pendingRequests.delete(message.id);
+            if (message.ok) {
+              pending.resolve({
+                output: message.output,
+                report: { ...message.report, execution: "worker" },
+              });
+            } else {
+              const error = new Error(message.error?.message || "Worker formatting failed.");
+              error.name = message.error?.name || "Error";
+              error.stack = message.error?.stack || error.stack;
+              pending.reject(error);
+            }
+          });
+          worker.addEventListener("error", (event) => {
+            disableWorker(event.error || new Error(event.message || "Formatter worker failed."));
+          });
+        } catch (error) {
+          disableWorker(error instanceof Error ? error : new Error(String(error)));
+        }
+
+        async function ensureLocalRuntime() {
+          if (localRuntime) {
+            return localRuntime;
+          }
+          const script = document.createElement("script");
+          script.textContent = engineSource;
+          document.head.append(script);
+          script.remove();
+          localRuntime = createFormatterRuntime(window);
+          return localRuntime;
+        }
+
+        async function executeLocally(kind, input, options) {
+          const runtime = await ensureLocalRuntime();
+          const result = await runtime.execute(kind, input, options);
+          return {
+            output: result.output,
+            report: { ...result.report, execution: "main-thread" },
+          };
+        }
+
+        async function executeInWorker(kind, input, options) {
+          if (!worker || workerFailed) {
+            throw new Error("Formatter worker is unavailable.");
+          }
+          if (!workerReady) {
+            await Promise.race([
+              workerReadyPromise,
+              new Promise((_, reject) => {
+                window.setTimeout(() => reject(new Error("Formatter worker startup timed out.")), 10000);
+              }),
+            ]);
+          }
+          const id = ++requestSequence;
+          return new Promise((resolve, reject) => {
+            pendingRequests.set(id, { resolve, reject });
+            worker.postMessage({ id, kind, input, options });
+          });
+        }
+
+        async function execute(kind, input, options = {}) {
+          let result;
+          if (!workerFailed && worker) {
+            try {
+              result = await executeInWorker(kind, input, options);
+            } catch (error) {
+              disableWorker(error instanceof Error ? error : new Error(String(error)));
+              result = await executeLocally(kind, input, options);
+            }
+          } else {
+            result = await executeLocally(kind, input, options);
+          }
+          lastReport = Object.freeze({ ...result.report });
+          return result.output;
+        }
+
+        window.HtmlFormatterCore = Object.freeze({
+          formatHtml: (input, options) => execute("html", input, options),
+          formatCss: (input, options) => execute("css", input, options),
+          formatJavaScript: (input, options) => execute("javascript", input, options),
+          formatTypeScript: (input, options) => execute("typescript", input, options),
+          formatJson: (input, options) => execute("json", input, options),
+          getLastReport: () => (lastReport ? { ...lastReport } : null),
+          getCapabilities: () => ({
+            worker: Boolean(worker && !workerFailed),
+            workerReady,
+            engines: workerCapabilities?.engines ?? ["prettier", "js-beautify"],
+            parsers: workerCapabilities?.parsers ?? [
+              "html",
+              "vue",
+              "angular",
+              "lwc",
+              "css",
+              "babel",
+              "typescript",
+              "json",
+            ],
+          }),
+        });
+      })();
+    </script>`;
+
+          const uiScript = String.raw`    <script>
+      (() => {
+        "use strict";
+
+        if (!window.HtmlFormatterCore) {
+          throw new Error("Formatter core was not loaded.");
+        }
+
+        const elements = {
+          input: document.querySelector("#sourceInput"),
+          output: document.querySelector("#formattedOutput"),
+          inputStats: document.querySelector("#inputStats"),
+          outputStats: document.querySelector("#outputStats"),
+          status: document.querySelector("#statusMessage"),
+          formatButton: document.querySelector("#formatButton"),
+          openButton: document.querySelector("#openButton"),
+          fileInput: document.querySelector("#fileInput"),
+          sampleButton: document.querySelector("#sampleButton"),
+          clearButton: document.querySelector("#clearButton"),
+          copyButton: document.querySelector("#copyButton"),
+          downloadButton: document.querySelector("#downloadButton"),
+          parserSelect: document.querySelector("#parserSelect"),
+          indentSelect: document.querySelector("#indentSelect"),
+          widthSelect: document.querySelector("#widthSelect"),
+          layoutSelect: document.querySelector("#layoutSelect"),
+          sourcePanel: document.querySelector("#sourcePanel"),
+        };
+
+        let sourceFileName = "formatted.html";
+        let statusTimer = 0;
+        let formatting = false;
+
+        function getIndentUnit() {
+          if (elements.indentSelect.value === "tab") {
+            return "\t";
+          }
+          const size = Number(elements.indentSelect.value);
+          return " ".repeat(Number.isFinite(size) ? size : 2);
+        }
+
+        function getFormatterOptions() {
+          return {
+            indentUnit: getIndentUnit(),
+            maxLineLength: Number(elements.widthSelect.value) || 80,
+            parserMode: elements.parserSelect.value,
+            layoutMode: elements.layoutSelect.value,
+            endWithNewline: true,
+            fallback: true,
+          };
+        }
+
+        function formatStats(value) {
+          if (!value) {
+            return "0行 · 0文字";
+          }
+          const lineCount = value.split("\n").length;
+          return `${lineCount.toLocaleString("ja-JP")}行 · ${value.length.toLocaleString("ja-JP")}文字`;
+        }
+
+        function updateStats() {
+          elements.inputStats.textContent = formatStats(elements.input.value);
+          elements.outputStats.textContent = formatStats(elements.output.value);
+          const hasOutput = Boolean(elements.output.value);
+          elements.copyButton.disabled = !hasOutput;
+          elements.downloadButton.disabled = !hasOutput;
+        }
+
+        function resetEditorScroll(textarea) {
+          textarea.setSelectionRange(0, 0);
+          textarea.scrollTop = 0;
+          textarea.scrollLeft = 0;
+        }
+
+        function setStatus(message, kind = "neutral", temporary = false) {
+          window.clearTimeout(statusTimer);
+          elements.status.textContent = message;
+          elements.status.dataset.kind = kind;
+          if (temporary) {
+            statusTimer = window.setTimeout(() => {
+              elements.status.textContent = "入力内容はブラウザ内だけで処理されます。";
+              elements.status.dataset.kind = "neutral";
+            }, 5000);
+          }
+        }
+
+        function compactMessage(value, maxLength = 180) {
+          const normalized = String(value ?? "").replace(/\s+/gu, " ").trim();
+          return normalized.length > maxLength
+            ? `${normalized.slice(0, maxLength - 1)}…`
+            : normalized;
+        }
+
+        async function formatDocument() {
+          if (formatting) {
+            return;
+          }
+          const source = elements.input.value;
+          if (!source.trim()) {
+            elements.output.value = "";
+            updateStats();
+            setStatus("整形するHTMLを入力してください。", "warning", true);
+            elements.input.focus();
+            return;
+          }
+
+          formatting = true;
+          elements.formatButton.disabled = true;
+          elements.formatButton.setAttribute("aria-busy", "true");
+          elements.formatButton.textContent = "解析中…";
+          setStatus("構文を解析し、組み込み言語まで整形しています。", "neutral");
+
+          try {
+            await new Promise((resolve) => requestAnimationFrame(resolve));
+            const startedAt = performance.now();
+            const result = await window.HtmlFormatterCore.formatHtml(
+              source,
+              getFormatterOptions(),
+            );
+            const elapsed = Math.max(0, performance.now() - startedAt);
+            const report = window.HtmlFormatterCore.getLastReport();
+
+            elements.output.value = result;
+            resetEditorScroll(elements.output);
+            updateStats();
+
+            if (report?.fallback) {
+              setStatus(
+                `厳格解析に失敗したため寛容エンジンで出力しました: ${compactMessage(report.warning)}`,
+                "warning",
+              );
+            } else {
+              const executionLabel = report?.execution === "worker" ? "Worker" : "メインスレッド";
+              const parserLabel = report?.parser ?? "html";
+              const outputLines = report?.outputLines?.toLocaleString("ja-JP") ?? "-";
+              setStatus(
+                `Prettier/${parserLabel}・${executionLabel}で ${outputLines} 行に整形しました（${elapsed.toLocaleString("ja-JP", { maximumFractionDigits: 1 })} ms）。`,
+                "success",
+                true,
+              );
+            }
+          } catch (error) {
+            console.error(error);
+            setStatus(
+              `整形できませんでした: ${compactMessage(error instanceof Error ? error.message : String(error))}`,
+              "error",
+            );
+          } finally {
+            formatting = false;
+            elements.formatButton.disabled = false;
+            elements.formatButton.removeAttribute("aria-busy");
+            elements.formatButton.textContent = "強力整形";
+          }
+        }
+
+        async function copyOutput() {
+          if (!elements.output.value) {
+            return;
+          }
+          try {
+            if (navigator.clipboard && window.isSecureContext) {
+              await navigator.clipboard.writeText(elements.output.value);
+            } else {
+              elements.output.removeAttribute("readonly");
+              elements.output.select();
+              const copied = document.execCommand("copy");
+              elements.output.setAttribute("readonly", "");
+              elements.output.setSelectionRange(0, 0);
+              if (!copied) {
+                throw new Error("クリップボードへ書き込めませんでした");
+              }
+            }
+            setStatus("整形結果をコピーしました。", "success", true);
+          } catch (error) {
+            console.error(error);
+            setStatus("コピーできませんでした。出力欄から手動でコピーしてください。", "error", true);
+          }
+        }
+
+        function downloadOutput() {
+          if (!elements.output.value) {
+            return;
+          }
+          const blob = new Blob([elements.output.value], {
+            type: "text/html;charset=utf-8",
+          });
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement("a");
+          anchor.href = url;
+          anchor.download = sourceFileName;
+          document.body.append(anchor);
+          anchor.click();
+          anchor.remove();
+          URL.revokeObjectURL(url);
+          setStatus(`${sourceFileName} を保存しました。`, "success", true);
+        }
+
+        function deriveOutputFileName(fileName) {
+          const cleanName = fileName.trim() || "document.html";
+          if (/\.vue$/iu.test(cleanName)) {
+            return cleanName.replace(/\.vue$/iu, ".formatted.vue");
+          }
+          if (/\.x?html?$/iu.test(cleanName)) {
+            return cleanName.replace(/\.x?html?$/iu, ".formatted.html");
+          }
+          return `${cleanName}.formatted.html`;
+        }
+
+        function inferParserFromFileName(fileName) {
+          if (/\.vue$/iu.test(fileName)) {
+            return "vue";
+          }
+          if (/\.component\.html?$/iu.test(fileName)) {
+            return "angular";
+          }
+          return "auto";
+        }
+
+        async function loadFile(file) {
+          if (!file) {
+            return;
+          }
+          try {
+            const text = await file.text();
+            elements.input.value = text;
+            elements.output.value = "";
+            elements.parserSelect.value = inferParserFromFileName(file.name);
+            resetEditorScroll(elements.input);
+            resetEditorScroll(elements.output);
+            sourceFileName = deriveOutputFileName(file.name);
+            updateStats();
+            saveSettings();
+            setStatus(`${file.name} を読み込みました。`, "success", true);
+            elements.input.focus({ preventScroll: true });
+          } catch (error) {
+            console.error(error);
+            setStatus("ファイルを読み込めませんでした。", "error", true);
+          } finally {
+            elements.fileInput.value = "";
+          }
+        }
+
+        function loadSample() {
+          const closingScript = "<" + "/script>";
+          elements.input.value = [
+            "<!doctype html>",
+            '<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Strong sample</title>',
+            '<style>:root{--gap:clamp(12px,2vw,24px)}body{margin:0;font-family:system-ui;background:#f5f7fb}.cards{container-type:inline-size;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gap);padding:var(--gap)}.card{display:grid;gap:8px;padding:16px;border:1px solid #ccd6e2;border-radius:12px;background:white;&:hover{transform:translateY(-2px)}}@container(max-width:700px){.cards{grid-template-columns:1fr}}</style>',
+            '</head><body><main id="app" class="cards" data-mode="demo"><article class="card"><h1>Hello <span>world</span></h1><button id="button" class="primary" type="button">Click</button></article></main>',
+            '<script type="module">class Counter{#value=0;increment(step=1){this.#value+=step;return this.#value}}const counter=new Counter();const state={items:[{id:1,label:"alpha",enabled:true},{id:2,label:"beta",enabled:false}],metadata:{createdAt:new Date().toISOString(),tags:["html","css","javascript"]}};document.querySelector("#button")?.addEventListener("click",async()=>{const enabled=state.items.filter((item)=>item.enabled).map(({id,label})=>({id,label:label.toUpperCase()}));await Promise.resolve();console.log(/click/i.test("click"),counter.increment(),enabled,`items: ${enabled.length}`)});' + closingScript,
+            '<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Strong formatter","applicationCategory":"DeveloperApplication","featureList":["HTML","CSS","JavaScript","JSON"]}' + closingScript,
+            "</body></html>",
+          ].join("");
+          elements.output.value = "";
+          elements.parserSelect.value = "auto";
+          resetEditorScroll(elements.input);
+          resetEditorScroll(elements.output);
+          sourceFileName = "strong-sample.formatted.html";
+          updateStats();
+          setStatus("複雑な1行サンプルを入力しました。", "neutral", true);
+          elements.input.focus({ preventScroll: true });
+        }
+
+        function clearEditors() {
+          elements.input.value = "";
+          elements.output.value = "";
+          sourceFileName = "formatted.html";
+          updateStats();
+          setStatus("入力と整形結果を消去しました。", "neutral", true);
+          elements.input.focus();
+        }
+
+        function insertIndent(event) {
+          if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey) {
+            return;
+          }
+          event.preventDefault();
+          const textarea = event.currentTarget;
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const indent = getIndentUnit();
+          textarea.setRangeText(indent, start, end, "end");
+          textarea.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+
+        function setDropActive(active) {
+          elements.sourcePanel.classList.toggle("is-drop-target", active);
+        }
+
+        function saveSettings() {
+          try {
+            localStorage.setItem(
+              "html-formatter-settings-v2",
+              JSON.stringify({
+                parser: elements.parserSelect.value,
+                indent: elements.indentSelect.value,
+                width: elements.widthSelect.value,
+                layout: elements.layoutSelect.value,
+              }),
+            );
+          } catch {}
+        }
+
+        function restoreSettings() {
+          try {
+            const parsed = JSON.parse(localStorage.getItem("html-formatter-settings-v2") || "null");
+            if (parsed && ["auto", "html", "vue", "angular"].includes(parsed.parser)) {
+              elements.parserSelect.value = parsed.parser;
+            }
+            if (["2", "4", "tab"].includes(parsed?.indent)) {
+              elements.indentSelect.value = parsed.indent;
+            }
+            if (["60", "80", "100", "120"].includes(parsed?.width)) {
+              elements.widthSelect.value = parsed.width;
+            }
+            if (["safe", "maximum"].includes(parsed?.layout)) {
+              elements.layoutSelect.value = parsed.layout;
+            }
+          } catch {}
+        }
+
+        elements.formatButton.addEventListener("click", formatDocument);
+        elements.copyButton.addEventListener("click", copyOutput);
+        elements.downloadButton.addEventListener("click", downloadOutput);
+        elements.openButton.addEventListener("click", () => elements.fileInput.click());
+        elements.fileInput.addEventListener("change", () => loadFile(elements.fileInput.files?.[0]));
+        elements.sampleButton.addEventListener("click", loadSample);
+        elements.clearButton.addEventListener("click", clearEditors);
+        elements.input.addEventListener("input", updateStats);
+        elements.input.addEventListener("keydown", insertIndent);
+
+        for (const select of [
+          elements.parserSelect,
+          elements.indentSelect,
+          elements.widthSelect,
+          elements.layoutSelect,
+        ]) {
+          select.addEventListener("change", saveSettings);
+        }
+
+        for (const eventName of ["dragenter", "dragover"]) {
+          elements.sourcePanel.addEventListener(eventName, (event) => {
+            event.preventDefault();
+            setDropActive(true);
+          });
+        }
+        for (const eventName of ["dragleave", "drop"]) {
+          elements.sourcePanel.addEventListener(eventName, (event) => {
+            event.preventDefault();
+            setDropActive(false);
+          });
+        }
+        elements.sourcePanel.addEventListener("drop", (event) => {
+          loadFile(event.dataTransfer?.files?.[0]);
+        });
+        document.addEventListener("keydown", (event) => {
+          if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+            event.preventDefault();
+            formatDocument();
+          }
+        });
+
+        restoreSettings();
+        updateStats();
+        elements.input.focus();
+      })();
+    </script>`;
+
+          const rebuilt = [
+            prefix,
+            licenseComment,
+            payloadScript,
+            bootstrapScript,
+            uiScript,
+            suffix,
+          ].join("\n");
+
+          if (rebuilt.includes("Embedded js-beautify 2.0.3\n * The MIT License")) {
+            throw new Error("The old executable js-beautify bundle is still present.");
+          }
+          if (!rebuilt.includes("Prettier 3.9.6")) {
+            throw new Error("The new Prettier engine metadata is missing.");
+          }
+          if (!rebuilt.includes("formatterEnginePayload")) {
+            throw new Error("The embedded engine payload is missing.");
+          }
+          if (/<script\b[^>]*\bsrc\s*=/iu.test(rebuilt)) {
+            throw new Error("The rebuilt file depends on an external script.");
+          }
+          if (/https?:\/\/unpkg\.|https?:\/\/cdn\./iu.test(rebuilt)) {
+            throw new Error("The rebuilt file contains a CDN dependency.");
+          }
+
+          fs.writeFileSync(htmlPath, rebuilt, "utf8");
+          console.log(`Rebuilt ${htmlPath}: ${Buffer.byteLength(rebuilt).toLocaleString()} bytes`);
+          console.log(`Embedded engine payload: ${engineChunks.length.toLocaleString()} chunks`);
+          NODE
+
+      - name: Create a safely minified one-line copy
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const assert = require("node:assert/strict");
+          const fs = require("node:fs");
+          const { minify } = require("html-minifier-terser");
+
+          (async () => {
+            const source = fs.readFileSync("index.html", "utf8");
+            assert.doesNotMatch(source, /<script\b[^>]*\bsrc\s*=/iu);
+            assert.match(source, /Prettier 3\.9\.6/u);
+            assert.match(source, /new Worker\(/u);
+            assert.match(source, /formatTypeScript/u);
+            assert.match(source, /formatJson/u);
+
+            const minified = await minify(source, {
+              collapseBooleanAttributes: false,
+              collapseInlineTagWhitespace: false,
+              collapseWhitespace: true,
+              conservativeCollapse: false,
+              decodeEntities: false,
+              keepClosingSlash: true,
+              minifyCSS: true,
+              minifyJS: true,
+              removeAttributeQuotes: false,
+              removeComments: true,
+              removeOptionalTags: false,
+              removeRedundantAttributes: false,
+              sortAttributes: false,
+              sortClassName: false,
+              useShortDoctype: false,
+            });
+            const oneLine = minified.replace(/\r?\n/gu, "");
+            assert.equal(oneLine.split("\n").length, 1);
+            assert.ok(oneLine.length > 500000, `One-line app is unexpectedly small: ${oneLine.length}`);
+            fs.writeFileSync("/tmp/index.one-line.html", oneLine, "utf8");
+            console.log(`[one-line] 1 line / ${oneLine.length.toLocaleString()} characters`);
+          })().catch((error) => {
+            console.error(error);
+            process.exitCode = 1;
+          });
+          NODE
+
+      - name: Install Chromium
+        shell: bash
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser integration and self-format tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const assert = require("node:assert/strict");
+          const fs = require("node:fs");
+          const path = require("node:path");
+          const { pathToFileURL } = require("node:url");
+          const { chromium } = require("playwright");
+
+          const originalPath = path.resolve("index.html");
+          const oneLinePath = "/tmp/index.one-line.html";
+
+          async function openApp(browser, label, filePath) {
+            const page = await browser.newPage();
+            const errors = [];
+            const networkRequests = [];
+            page.on("pageerror", (error) => errors.push(`pageerror: ${error.stack ?? error.message}`));
+            page.on("console", (message) => {
+              if (message.type() === "error") {
+                errors.push(`console: ${message.text()}`);
+              }
+            });
+            page.on("request", (request) => {
+              if (/^https?:/iu.test(request.url())) {
+                networkRequests.push(request.url());
+              }
+            });
+
+            await page.goto(pathToFileURL(filePath).href, { waitUntil: "load" });
+            await page.waitForFunction(() => Boolean(window.HtmlFormatterCore));
+            await page.waitForFunction(() => window.HtmlFormatterCore.getCapabilities().workerReady, null, {
+              timeout: 15000,
+            });
+            assert.deepEqual(networkRequests, [], `${label}: external network requests were made.`);
+            assert.equal(errors.length, 0, `${label}: ${errors.join("\n")}`);
+            return { page, errors, networkRequests };
+          }
+
+          async function exerciseUi(browser, label, filePath) {
+            const { page, errors, networkRequests } = await openApp(browser, label, filePath);
+            await page.locator("#sampleButton").click();
+            const input = await page.locator("#sourceInput").inputValue();
+            assert.equal(input.split("\n").length, 1, `${label}: sample input is not one line.`);
+
+            await page.locator("#formatButton").click();
+            await page.waitForFunction(() => {
+              const button = document.querySelector("#formatButton");
+              const output = document.querySelector("#formattedOutput");
+              return button && !button.disabled && output && output.value.length > 0;
+            }, null, { timeout: 30000 });
+
+            const output = await page.locator("#formattedOutput").inputValue();
+            const report = await page.evaluate(() => window.HtmlFormatterCore.getLastReport());
+            const outputLines = output.trimEnd().split("\n").length;
+
+            assert.ok(outputLines >= 65, `${label}: sample expanded to only ${outputLines} lines.`);
+            assert.equal(report.engine, "prettier", `${label}: strict Prettier engine was not used.`);
+            assert.equal(report.fallback, false, `${label}: sample unexpectedly used fallback.`);
+            assert.equal(report.execution, "worker", `${label}: formatter did not run in a worker.`);
+            assert.match(output, /<style>\s*\n/u, `${label}: style block was not expanded.`);
+            assert.match(output, /:root \{\s*\n\s+--gap:/u, `${label}: CSS declarations were not formatted.`);
+            assert.match(output, /@container \(max-width: 700px\)/u, `${label}: modern CSS was not preserved.`);
+            assert.match(output, /<script type="module">\s*\n/u, `${label}: module script was not expanded.`);
+            assert.match(output, /class Counter \{\s*\n/u, `${label}: JavaScript class was not formatted.`);
+            assert.match(output, /#value = 0;/u, `${label}: private class field was not preserved.`);
+            assert.match(output, /<script type="application\/ld\+json">\s*\n/u, `${label}: JSON-LD block was not expanded.`);
+            assert.match(output, /"@context": "https:\/\/schema\.org"/u, `${label}: JSON-LD was not formatted.`);
+
+            const secondPass = await page.evaluate(
+              async ({ value, options }) => window.HtmlFormatterCore.formatHtml(value, options),
+              {
+                value: output,
+                options: {
+                  indentUnit: "  ",
+                  maxLineLength: 80,
+                  parserMode: "auto",
+                  layoutMode: "safe",
+                  endWithNewline: true,
+                  fallback: true,
+                },
+              },
+            );
+            assert.equal(secondPass, output, `${label}: formatting is not idempotent.`);
+
+            const apiResults = await page.evaluate(async () => {
+              const core = window.HtmlFormatterCore;
+              const css = await core.formatCss(
+                ":root{--size:clamp(1rem,2vw,3rem)}@supports(display:grid){.a,.b{display:grid;gap:var(--size)}}",
+                { indentUnit: "  ", maxLineLength: 80 },
+              );
+              const javascript = await core.formatJavaScript(
+                "class Box{#value=1;read(){return this.#value??0}}const value=new Box().read();",
+                { indentUnit: "  ", maxLineLength: 80 },
+              );
+              const typescript = await core.formatTypeScript(
+                "type Item={id:number;name:string};const pick=(item:Item):string=>item?.name??\"\";",
+                { indentUnit: "  ", maxLineLength: 80 },
+              );
+              const json = await core.formatJson(
+                '{"items":[{"id":1,"active":true},{"id":2,"active":false}]}',
+                { indentUnit: "  ", maxLineLength: 80 },
+              );
+              return { css, javascript, typescript, json };
+            });
+            assert.match(apiResults.css, /@supports \(display: grid\)/u);
+            assert.match(apiResults.javascript, /class Box \{\s*\n/u);
+            assert.match(apiResults.typescript, /type Item = \{/u);
+            assert.match(apiResults.json, /"items": \[/u);
+
+            const dialects = await page.evaluate(async () => {
+              const core = window.HtmlFormatterCore;
+              const vue = await core.formatHtml(
+                '<template><main id="app" class="shell"><button v-if="visible" @click="run">Run</button></main></template><script setup lang="ts">const visible=ref(true);const run=()=>console.log(visible.value)</' + 'script><style scoped>.shell{display:grid;gap:12px}</style>',
+                { parserMode: "vue", indentUnit: "  ", maxLineLength: 80 },
+              );
+              const vueReport = core.getLastReport();
+              const angular = await core.formatHtml(
+                '<main class="shell" *ngIf="items?.length"><button type="button" (click)="run(items)" [disabled]="loading">Run</button></main>',
+                { parserMode: "angular", indentUnit: "  ", maxLineLength: 80 },
+              );
+              const angularReport = core.getLastReport();
+              return { vue, vueReport, angular, angularReport };
+            });
+            assert.equal(dialects.vueReport.fallback, false, `${label}: Vue used fallback.`);
+            assert.equal(dialects.angularReport.fallback, false, `${label}: Angular used fallback.`);
+            assert.match(dialects.vue, /<script setup lang="ts">\s*\n/u);
+            assert.match(dialects.angular, /\*ngIf="items\?\.length"/u);
+
+            const fallbackResult = await page.evaluate(async () => {
+              const core = window.HtmlFormatterCore;
+              window.__formatterInputExecuted = 0;
+              const broken = '<div class="broken"><script>window.__formatterInputExecuted+=1;const value={a:1,,};</' + 'script><span>still output</span></div>';
+              const output = await core.formatHtml(broken, {
+                indentUnit: "  ",
+                maxLineLength: 80,
+                parserMode: "html",
+                fallback: true,
+              });
+              return {
+                output,
+                report: core.getLastReport(),
+                executed: window.__formatterInputExecuted,
+              };
+            });
+            assert.equal(fallbackResult.executed, 0, `${label}: input script was executed.`);
+            assert.equal(fallbackResult.report.fallback, true, `${label}: broken input did not use fallback.`);
+            assert.match(fallbackResult.output, /still output/u);
+
+            assert.deepEqual(networkRequests, [], `${label}: external network requests were made.`);
+            assert.equal(errors.length, 0, `${label}: ${errors.join("\n")}`);
+            await page.close();
+            return output;
+          }
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            try {
+              const originalOutput = await exerciseUi(browser, "original app", originalPath);
+              const oneLineOutput = await exerciseUi(browser, "one-line app", oneLinePath);
+              assert.equal(oneLineOutput, originalOutput, "One-line app produced different sample output.");
+
+              const { page } = await openApp(browser, "self-format source", originalPath);
+              const oneLineSource = fs.readFileSync(oneLinePath, "utf8");
+              const selfFormatted = await page.evaluate(
+                async (source) => window.HtmlFormatterCore.formatHtml(source, {
+                  indentUnit: "  ",
+                  maxLineLength: 80,
+                  parserMode: "html",
+                  layoutMode: "safe",
+                  endWithNewline: true,
+                  fallback: false,
+                }),
+                oneLineSource,
+              );
+              const selfReport = await page.evaluate(() => window.HtmlFormatterCore.getLastReport());
+              await page.close();
+
+              const selfFormattedLines = selfFormatted.trimEnd().split("\n").length;
+              assert.equal(selfReport.engine, "prettier");
+              assert.equal(selfReport.fallback, false);
+              assert.equal(selfReport.execution, "worker");
+              assert.ok(
+                selfFormattedLines > 800,
+                `Complete one-line app expanded to only ${selfFormattedLines} lines.`,
+              );
+              fs.writeFileSync("/tmp/index.self-formatted.html", selfFormatted, "utf8");
+              const selfOutput = await exerciseUi(
+                browser,
+                "self-formatted app",
+                "/tmp/index.self-formatted.html",
+              );
+              assert.equal(selfOutput, originalOutput, "Self-formatted app produced different sample output.");
+
+              console.log("[browser] original application: passed");
+              console.log("[browser] one-line application: passed");
+              console.log("[browser] self-formatted application: passed");
+              console.log("[browser] strict HTML/CSS/JS/TS/JSON parsers: passed");
+              console.log("[browser] Vue and Angular parsers: passed");
+              console.log("[browser] malformed-input fallback: passed");
+              console.log("[browser] input script non-execution: passed");
+              console.log(`[browser] complete app expanded from 1 line to ${selfFormattedLines.toLocaleString()} lines`);
+            } finally {
+              await browser.close();
+            }
+          })().catch((error) => {
+            console.error(error);
+            process.exitCode = 1;
+          });
+          NODE
+
+      - name: Commit the verified formatter
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf node_modules package.json package-lock.json
+          rm -f .github/workflows/upgrade-formatter-engine.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit -m "feat: upgrade to parser-based formatter with worker fallback"
+          git push origin HEAD:main
